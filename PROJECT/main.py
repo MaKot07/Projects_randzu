@@ -48,6 +48,10 @@ while run:
                         adding_lines(index_x_rect, index_y_rect, color_player, coord_all_move_and_color)
                         win_color = check_colors_win()
 
+                        position_score = find_position_score(all_line_blackplayer)
+                        print(position_score)
+
+
 
     draw_all_game(win_color,number_of_movies, coord_all_move_and_color)
 

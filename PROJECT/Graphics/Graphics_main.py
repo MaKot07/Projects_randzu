@@ -40,6 +40,7 @@ def draw_main_board(cell_qty, cell_size, cell_size_ramka):
             text2 = f1.render('1', 1, BLACK)
             screen.blit(text2, (5, (y + 1) * cell_size_ramka + 20))
 
+
 def draw_all_shashky(coord_all_move_and_color):
     for index_x_rect, index_y_rect, color_player in  coord_all_move_and_color:
         pygame.draw.circle(screen, color_player,(index_x_rect * cell_size_ramka + board_shift, index_y_rect * cell_size_ramka + board_shift), 10)
