@@ -40,8 +40,35 @@ def generator_motion(for_color_player):
 
 
 def find_position_score(lines):
-    pos_score = 0
+    pos_score = 0.0
     for line in lines:
-        pos_score += len(line)
+        if len(line) == 1:
+            pos_score += len(line)
+        else:
+            check_isolated = check_line_isolated(line)
+            if check_isolated == 0:
+                pos_score += len(line)
+            else:
+                if check_isolated == 1:
+                    pos_score += len(line)/2
 
     return pos_score
+
+
+def check_line_isolated(our_check_line):
+    x_progressive = our_check_line[1][0] - our_check_line[0][0]
+    y_progressive = our_check_line[1][1] - our_check_line[0][1]
+
+    coord_new_max = (x_progressive + our_check_line[-1][0], y_progressive + our_check_line[-1][1])
+    coord_new_min = (our_check_line[0][0] - x_progressive, our_check_line[0][1] - y_progressive)
+
+    check_coord_new_max = check_motion_for_pose_score(coord_new_max[0], coord_new_max[1], coord_all_move_and_color)
+    check_coord_new_min = check_motion_for_pose_score(coord_new_min[0], coord_new_min[1], coord_all_move_and_color)
+
+    if check_coord_new_max == False and check_coord_new_min == False:
+        return 2
+    else:
+        if check_coord_new_max == False or check_coord_new_min == False:
+            return 1
+        else:
+            return 0

@@ -3,6 +3,12 @@ import pygame
 from Graphics.Graphics_main import give_coord, give_coord_rect
 
 
+#variables
+all_line_whiteplayer = []
+all_line_blackplayer = []
+check_win_black = False
+check_win_white = False
+
 def find_near_chips(x,y,color_player, coord_all_move_and_color):
     near_chips = []
 
@@ -55,7 +61,7 @@ def check_line(coord_chip, our_line):
 def check_condition_win(all_line):
     fl = False
     for line in all_line:
-        if len(line) == 5:
+        if len(line) >= 5:
             fl = True
             break
 
@@ -76,6 +82,40 @@ def check_colors_win():
     return None
 
 
+def check_connect_lines(coord_chip, line, color_chip):
+    add = (False, 0)
+    if coord_chip > line[-1]:
+        new_coord_x_chip = coord_chip[0] + (coord_chip[0] - line[-1][0])
+        new_coord_y_chip = coord_chip[1] + (coord_chip[1] - line[-1][1])
+        next_coord_chip = (new_coord_x_chip, new_coord_y_chip)
+
+    else:
+        new_coord_x_chip = coord_chip[0] - (line[0][0] - coord_chip[0])
+        new_coord_y_chip = coord_chip[1] - (line[0][1] - coord_chip[1])
+        next_coord_chip = (new_coord_x_chip, new_coord_y_chip)
+
+    if color_chip == BLACK:
+        for lines in all_line_blackplayer:
+            if next_coord_chip in lines and lines != line:
+                if len(lines) != 1:
+                    check_next_line = check_line(coord_chip, lines)
+                    if check_next_line == True:
+                        return (True, all_line_blackplayer.index(lines))
+                else:
+                    add = (True, all_line_blackplayer.index(lines))
+    else:
+        for lines in all_line_whiteplayer:
+            if next_coord_chip in line and lines != line:
+                if len(lines) != 1:
+                    check_next_line = check_line(coord_chip, lines)
+                    if check_next_line == True:
+                        return (True, all_line_whiteplayer.index(lines))
+                else:
+                    add = (True, all_line_whiteplayer.index(lines))
+
+    return add
+
+
 def adding_lines(index_x_rect, index_y_rect, color_player, coord_all_move_and_color):
     if color_player == BLACK:
         bl_near_chips = find_near_chips(index_x_rect, index_y_rect, color_player, coord_all_move_and_color)
@@ -84,16 +124,49 @@ def adding_lines(index_x_rect, index_y_rect, color_player, coord_all_move_and_co
                 if coord_chips in line:
                     if len(line) == 1:
                         if (index_x_rect, index_y_rect) > line[-1]:
-                            all_line_blackplayer.append(line + [(index_x_rect, index_y_rect)])
+                            check_connect_another_line, index_connect_line = check_connect_lines((index_x_rect, index_y_rect), line, color_player)
+                            if check_connect_another_line == True:
+                                all_line_blackplayer.append(line + [(index_x_rect, index_y_rect)] + all_line_blackplayer[index_connect_line])
+                                if len(all_line_blackplayer[index_connect_line]) != 1:
+                                    del all_line_blackplayer[index_connect_line]
+                                if len(line) != 1:
+                                    del all_line_blackplayer[all_line_blackplayer.index(line)]
+                            else:
+                                all_line_blackplayer.append(line + [(index_x_rect, index_y_rect)])
                         else:
-                            all_line_blackplayer.append([(index_x_rect, index_y_rect)] + line)
+                            check_connect_another_line, index_connect_line = check_connect_lines((index_x_rect, index_y_rect), line, color_player)
+                            if check_connect_another_line == True:
+                                all_line_blackplayer.append( all_line_blackplayer[index_connect_line] + [(index_x_rect, index_y_rect)] + line)
+                                if len(all_line_blackplayer[index_connect_line]) != 1:
+                                    del all_line_blackplayer[index_connect_line]
+                                if len(line) != 1:
+                                    del all_line_blackplayer[all_line_blackplayer.index(line)]
+                            else:
+                                all_line_blackplayer.append(line + [(index_x_rect, index_y_rect)])
+
                     else:
                         in_condition = check_line((index_x_rect, index_y_rect), line)
                         if in_condition == True:
                             if (index_x_rect, index_y_rect) > line[-1]:
-                                all_line_blackplayer.append(line + [(index_x_rect, index_y_rect)])
+                                check_connect_another_line, index_connect_line = check_connect_lines((index_x_rect, index_y_rect), line, color_player)
+                                if check_connect_another_line == True:
+                                    all_line_blackplayer.append(line + [(index_x_rect, index_y_rect)] + all_line_blackplayer[index_connect_line])
+                                    if len(all_line_blackplayer[index_connect_line]) != 1:
+                                        del all_line_blackplayer[index_connect_line]
+                                    if len(line) != 1:
+                                        del all_line_blackplayer[all_line_blackplayer.index(line)]
+                                else:
+                                    all_line_blackplayer.append(line + [(index_x_rect, index_y_rect)])
                             else:
-                                all_line_blackplayer.append([(index_x_rect, index_y_rect)] + line)
+                                check_connect_another_line, index_connect_line = check_connect_lines((index_x_rect, index_y_rect), line, color_player)
+                                if check_connect_another_line == True:
+                                    all_line_blackplayer.append(all_line_blackplayer[index_connect_line] + [(index_x_rect, index_y_rect)] + line)
+                                    if len(all_line_blackplayer[index_connect_line]) != 1:
+                                        del all_line_blackplayer[index_connect_line]
+                                    if len(line) != 1:
+                                        del all_line_blackplayer[all_line_blackplayer.index(line)]
+                                else:
+                                    all_line_blackplayer.append(line + [(index_x_rect, index_y_rect)])
     else:
         wh_near_chips = find_near_chips(index_x_rect, index_y_rect, color_player, coord_all_move_and_color)
         for coord_chips in wh_near_chips:
@@ -101,18 +174,49 @@ def adding_lines(index_x_rect, index_y_rect, color_player, coord_all_move_and_co
                 if coord_chips in line:
                     if len(line) == 1:
                         if (index_x_rect, index_y_rect) > line[-1]:
-                            all_line_whiteplayer.append(line + [(index_x_rect, index_y_rect)])
+                            check_connect_another_line, index_connect_line = check_connect_lines((index_x_rect, index_y_rect), line, color_player)
+                            if check_connect_another_line == True:
+                                all_line_whiteplayer.append(line + [(index_x_rect, index_y_rect)] + all_line_whiteplayer[index_connect_line])
+                                if len(all_line_whiteplayer[index_connect_line]) != 1:
+                                    del all_line_whiteplayer[index_connect_line]
+                                if len(line) != 1:
+                                    del all_line_whiteplayer[all_line_whiteplayer.index(line)]
+                            else:
+                                all_line_whiteplayer.append(line + [(index_x_rect, index_y_rect)])
                         else:
-                            all_line_whiteplayer.append([(index_x_rect, index_y_rect)] + line)
+                            check_connect_another_line, index_connect_line = check_connect_lines((index_x_rect, index_y_rect), line, color_player)
+                            if check_connect_another_line == True:
+                                all_line_whiteplayer.append(all_line_whiteplayer[index_connect_line] + [(index_x_rect, index_y_rect)] + line)
+                                if len(all_line_whiteplayer[index_connect_line]) != 1:
+                                    del all_line_whiteplayer[index_connect_line]
+                                if len(line) != 1:
+                                    del all_line_whiteplayer[all_line_whiteplayer.index(line)]
+                            else:
+                                all_line_whiteplayer.append(line + [(index_x_rect, index_y_rect)])
 
                     else:
                         in_condition = check_line((index_x_rect, index_y_rect), line)
                         if in_condition == True:
                             if (index_x_rect, index_y_rect) > line[-1]:
-                                all_line_whiteplayer.append(line + [(index_x_rect, index_y_rect)])
-
+                                check_connect_another_line, index_connect_line = check_connect_lines((index_x_rect, index_y_rect), line, color_player)
+                                if check_connect_another_line == True:
+                                    all_line_whiteplayer.append(line + [(index_x_rect, index_y_rect)] + all_line_whiteplayer[index_connect_line])
+                                    if len(all_line_whiteplayer[index_connect_line]) != 1:
+                                        del all_line_whiteplayer[index_connect_line]
+                                    if len(line) != 1:
+                                        del all_line_whiteplayer[all_line_whiteplayer.index(line)]
+                                else:
+                                    all_line_whiteplayer.append(line + [(index_x_rect, index_y_rect)])
                             else:
-                                all_line_whiteplayer.append([(index_x_rect, index_y_rect)] + line)
+                                check_connect_another_line, index_connect_line = check_connect_lines((index_x_rect, index_y_rect), line, color_player)
+                                if check_connect_another_line == True:
+                                    all_line_whiteplayer.append(all_line_whiteplayer[index_connect_line] + [(index_x_rect, index_y_rect)] + line)
+                                    if len(all_line_whiteplayer[index_connect_line]) != 1:
+                                        del all_line_whiteplayer[index_connect_line]
+                                    if len(line) != 1:
+                                        del all_line_whiteplayer[all_line_whiteplayer.index(line)]
+                                else:
+                                    all_line_whiteplayer.append(line + [(index_x_rect, index_y_rect)])
 
     if color_player == WHITE:
         all_line_whiteplayer.append([(index_x_rect, index_y_rect)])
@@ -161,9 +265,17 @@ def check_motion_for_generator(x, y, coord_all_move_and_color):
         return False
 
 
-#variables
-all_line_whiteplayer = []
-all_line_blackplayer = []
-check_win_black = False
-check_win_white = False
+
+def check_motion_for_pose_score(x_rect, y_rect, coord_all_move_and_color):
+    fl = False
+
+    if x_rect <= cell_qty and x_rect >= 0 and y_rect <= cell_qty and y_rect >= 0:
+        if (x_rect, y_rect, WHITE) not in coord_all_move_and_color and (x_rect, y_rect, BLACK) not in coord_all_move_and_color:
+            fl = True
+
+    if fl == True:
+        return True
+    else:
+        return False
+
 
