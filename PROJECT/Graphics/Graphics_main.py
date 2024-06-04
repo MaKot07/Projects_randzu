@@ -42,11 +42,11 @@ def draw_main_board(cell_qty, cell_size, cell_size_ramka):
 
 
 def draw_all_shashky(coord_all_move_and_color):
-    for index_x_rect, index_y_rect, color_player in  coord_all_move_and_color:
+    for (index_x_rect, index_y_rect), color_player in coord_all_move_and_color:
         pygame.draw.circle(screen, color_player,(index_x_rect * cell_size_ramka + board_shift, index_y_rect * cell_size_ramka + board_shift), 10)
 
 def draw_screen():
-    screen.fill((255, 255, 255))
+    screen.fill((155, 155, 155))
 
 def text_output_number_of_movies(number_of_movies):
     text = f1.render(f'Количество ходов: {number_of_movies}', 1, BLACK)
