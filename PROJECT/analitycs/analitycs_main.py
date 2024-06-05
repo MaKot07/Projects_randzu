@@ -129,7 +129,7 @@ def dellit_near_chips(coords_chip, check_in_line, list_whith_lines, color, now_c
     all_near_chips = find_near_chips(coords_chip[0], coords_chip[1], color, now_coord_all_move_and_color)
 
     for near_chips in all_near_chips:
-        if near_chips in check_in_line and near_chips in list_whith_lines:
+        if near_chips in check_in_line and [near_chips] in list_whith_lines:
             del list_whith_lines[list_whith_lines.index([near_chips])]
     return list_whith_lines
 
@@ -163,82 +163,93 @@ def find_need_line(coords_chip, color, coord_all_move_and_color, need_line):
 
     return list_without_len_1 + list_with_len_1
 
-def adding_lines(index_x_rect, index_y_rect, all_line, color_player, coord_all_move_and_color):
+def adding_lines(index_x_rect, index_y_rect, all_line, color_player, now_coord_all_move_and_color):
     if color_player == BLACK:
-        list_whith_lines = find_need_line((index_x_rect, index_y_rect), color_player, coord_all_move_and_color, all_line)
+        list_whith_lines = find_need_line((index_x_rect, index_y_rect), color_player, now_coord_all_move_and_color, all_line)
         for line in list_whith_lines:
             if (index_x_rect, index_y_rect) > line[-1]:
                 check_connect_another_line, index_connect_line = check_connect_lines((index_x_rect, index_y_rect), line, color_player, all_line)
                 if check_connect_another_line == True:
                     all_line.append(line + [(index_x_rect, index_y_rect)] + all_line[index_connect_line])
+                    new_line = line + [(index_x_rect, index_y_rect)] + all_line[index_connect_line]
 
-                    list_whith_lines = dellit_near_chips((index_x_rect, index_y_rect), all_line[-1], list_whith_lines,color_player, coord_all_move_and_color)
+                    list_whith_lines = dellit_near_chips((index_x_rect, index_y_rect), new_line, list_whith_lines, color_player, now_coord_all_move_and_color)
                     if len(all_line[index_connect_line]) != 1:
                         if all_line[index_connect_line] in list_whith_lines:
                             del list_whith_lines[list_whith_lines.index(all_line[index_connect_line])]
                         del all_line[index_connect_line]
                     if len(line) != 1:
-                        if all_line[all_line.index(line)] in list_whith_lines:
-                            del list_whith_lines[
-                                list_whith_lines.index(all_line[all_line.index(line)])]
                         del all_line[all_line.index(line)]
                 else:
                     all_line.append(line + [(index_x_rect, index_y_rect)])
-                    list_whith_lines = dellit_near_chips((index_x_rect, index_y_rect), all_line[-1], list_whith_lines,color_player, coord_all_move_and_color)
+                    new_line = line + [(index_x_rect, index_y_rect)]
+
+                    if len(line) != 1:
+                        del all_line[all_line.index(line)]
+                        list_whith_lines = dellit_near_chips((index_x_rect, index_y_rect), new_line, list_whith_lines,color_player, now_coord_all_move_and_color)
             else:
                 check_connect_another_line, index_connect_line = check_connect_lines((index_x_rect, index_y_rect), line, color_player, all_line)
                 if check_connect_another_line == True:
                     all_line.append(all_line[index_connect_line] + [(index_x_rect, index_y_rect)] + line)
+                    new_line = all_line[index_connect_line] + [(index_x_rect, index_y_rect)] + line
 
-                    list_whith_lines = dellit_near_chips((index_x_rect, index_y_rect), all_line[-1], list_whith_lines, color_player, coord_all_move_and_color)
+                    list_whith_lines = dellit_near_chips((index_x_rect, index_y_rect), new_line, list_whith_lines, color_player, now_coord_all_move_and_color)
                     if len(all_line[index_connect_line]) != 1:
                         if all_line[index_connect_line] in list_whith_lines:
                             del list_whith_lines[list_whith_lines.index(all_line[index_connect_line])]
                         del all_line[index_connect_line]
                     if len(line) != 1:
-                        if all_line[all_line.index(line)] in list_whith_lines:
-                            del list_whith_lines[list_whith_lines.index(all_line[all_line.index(line)])]
                         del all_line[all_line.index(line)]
                 else:
-                    all_line.append(line + [(index_x_rect, index_y_rect)])
-                    list_whith_lines = dellit_near_chips((index_x_rect, index_y_rect), all_line[-1], list_whith_lines,color_player, coord_all_move_and_color)
+                    all_line.append([(index_x_rect, index_y_rect)] + line)
+                    new_line = [(index_x_rect, index_y_rect)] + line
+
+                    if len(line) != 1:
+                        del all_line[all_line.index(line)]
+                        list_whith_lines = dellit_near_chips((index_x_rect, index_y_rect), new_line, list_whith_lines,color_player, now_coord_all_move_and_color)
     else:
-        list_whith_lines = find_need_line((index_x_rect, index_y_rect), color_player, coord_all_move_and_color, all_line)
+        list_whith_lines = find_need_line((index_x_rect, index_y_rect), color_player, now_coord_all_move_and_color, all_line)
         for line in list_whith_lines:
             if (index_x_rect, index_y_rect) > line[-1]:
                 check_connect_another_line, index_connect_line = check_connect_lines((index_x_rect, index_y_rect), line, color_player, all_line)
                 if check_connect_another_line == True:
                     all_line.append(line + [(index_x_rect, index_y_rect)] + all_line[index_connect_line])
+                    new_line = line + [(index_x_rect, index_y_rect)] + all_line[index_connect_line]
 
-                    list_whith_lines = dellit_near_chips((index_x_rect, index_y_rect), all_line[-1],list_whith_lines, color_player, coord_all_move_and_color)
+                    list_whith_lines = dellit_near_chips((index_x_rect, index_y_rect), new_line ,list_whith_lines, color_player, now_coord_all_move_and_color)
                     if len(all_line[index_connect_line]) != 1:
                         if all_line[index_connect_line] in list_whith_lines:
                             del list_whith_lines[list_whith_lines.index(all_line[index_connect_line])]
                         del all_line[index_connect_line]
                     if len(line) != 1:
-                        if all_line[all_line.index(line)] in list_whith_lines:
-                            del list_whith_lines[list_whith_lines.index(all_line[all_line.index(line)])]
                         del all_line[all_line.index(line)]
                 else:
                     all_line.append(line + [(index_x_rect, index_y_rect)])
-                    list_whith_lines = dellit_near_chips((index_x_rect, index_y_rect), all_line[-1], list_whith_lines,color_player, coord_all_move_and_color)
+                    new_line = line + [(index_x_rect, index_y_rect)]
+
+                    if len(line) != 1:
+                        del all_line[all_line.index(line)]
+                        list_whith_lines = dellit_near_chips((index_x_rect, index_y_rect), new_line, list_whith_lines,color_player, now_coord_all_move_and_color)
             else:
                 check_connect_another_line, index_connect_line = check_connect_lines((index_x_rect, index_y_rect), line,color_player, all_line)
                 if check_connect_another_line == True:
                     all_line.append(all_line[index_connect_line] + [(index_x_rect, index_y_rect)] + line)
+                    new_line = all_line[index_connect_line] + [(index_x_rect, index_y_rect)] + line
 
-                    list_whith_lines = dellit_near_chips((index_x_rect, index_y_rect), all_line[-1],list_whith_lines, color_player, coord_all_move_and_color)
+                    list_whith_lines = dellit_near_chips((index_x_rect, index_y_rect), new_line,list_whith_lines, color_player, now_coord_all_move_and_color)
                     if len(all_line[index_connect_line]) != 1:
                         if all_line[index_connect_line] in list_whith_lines:
                             del list_whith_lines[list_whith_lines.index(all_line[index_connect_line])]
                         del all_line[index_connect_line]
                     if len(line) != 1:
-                        if all_line[all_line.index(line)] in list_whith_lines:
-                            del list_whith_lines[list_whith_lines.index(all_line[all_line.index(line)])]
                         del all_line[all_line.index(line)]
                 else:
-                    all_line.append(line + [(index_x_rect, index_y_rect)])
-                    list_whith_lines = dellit_near_chips((index_x_rect, index_y_rect), all_line[-1], list_whith_lines,color_player, coord_all_move_and_color)
+                    all_line.append([(index_x_rect, index_y_rect)] + line)
+                    new_line = [(index_x_rect, index_y_rect)] + line
+
+                    if len(line) != 1:
+                        del all_line[all_line.index(line)]
+                        list_whith_lines = dellit_near_chips((index_x_rect, index_y_rect), new_line, list_whith_lines,color_player, now_coord_all_move_and_color)
 
     if color_player == WHITE:
         all_line.append([(index_x_rect, index_y_rect)])

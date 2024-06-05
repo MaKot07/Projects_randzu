@@ -38,8 +38,8 @@ def generator_motion(color_for_gen):
 def find_position_score(lines, now_coord_all_move_and_color):
     pos_score = 0
     for line in lines[1]:
-        if len(line) == 5:
-            pos_score += 500
+        if len(line) >= 5:
+            pos_score += 5000
         else:
             check_isolated = check_line_isolated(line, now_coord_all_move_and_color, WHITE)
             if check_isolated == 0:
@@ -63,8 +63,8 @@ def find_position_score(lines, now_coord_all_move_and_color):
                     pos_score += 5
 
     for line in lines[0]:
-        if len(line) == 5:
-            pos_score -= 500
+        if len(line) >= 5:
+            pos_score -= 5000
         else:
             check_isolated = check_line_isolated(line, now_coord_all_move_and_color, BLACK)
             if check_isolated == 0:
