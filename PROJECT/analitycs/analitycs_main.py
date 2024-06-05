@@ -61,12 +61,12 @@ def check_line(coord_chip, our_line):
         return False
 
 
-def check_condition_win(all_line, coord_all_move_and_color):
+def check_condition_win(all_line, now_coord_all_move_and_color):
     fl = False
     check_draw = True
     for x in range(cell_qty+1):
         for y in range(cell_qty+1):
-            if (x,y,WHITE) not in coord_all_move_and_color or (x,y,BLACK) not in coord_all_move_and_color:
+            if (x,y,WHITE) not in now_coord_all_move_and_color or (x,y,BLACK) not in now_coord_all_move_and_color:
                 check_draw = False
     if check_draw == True:
         return None
@@ -80,9 +80,9 @@ def check_condition_win(all_line, coord_all_move_and_color):
     else:
         return False
 
-def check_colors_win(coord_all_move_and_color):
-    check_win_white = check_condition_win(all_line_whiteplayer, coord_all_move_and_color)
-    check_win_black = check_condition_win(all_line_blackplayer, coord_all_move_and_color)
+def check_colors_win(now_coord_all_move_and_color):
+    check_win_white = check_condition_win(all_line_whiteplayer, now_coord_all_move_and_color)
+    check_win_black = check_condition_win(all_line_blackplayer, now_coord_all_move_and_color)
 
     if check_win_black:
         return BLACK
@@ -310,5 +310,11 @@ def check_motion_for_pose_score(x_rect, y_rect, coord_all_move_and_color):
         return True
     else:
         return False
+
+
+def check_want_newgame(x_pixel, y_pixel):
+    if x_pixel >= 700 and x_pixel <= 840 and y_pixel >= 180 and y_pixel < 250:
+        return True
+    return False
 
 

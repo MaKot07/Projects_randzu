@@ -44,21 +44,21 @@ def find_position_score(lines, now_coord_all_move_and_color):
             check_isolated = check_line_isolated(line, now_coord_all_move_and_color, WHITE)
             if check_isolated == 0:
                 if len(line) == 4:
-                    pos_score += 250
+                    pos_score += 1750
                 if len(line) == 3:
-                    pos_score += 70
+                    pos_score += 300
                 if len(line) == 2:
-                    pos_score += 40
+                    pos_score += 140
                 if len(line) == 1:
                     pos_score += 10
 
             if check_isolated == 1:
                 if len(line) == 4:
-                    pos_score += 100
+                    pos_score += 500
                 if len(line) == 3:
-                    pos_score += 40
+                    pos_score += 160
                 if len(line) == 2:
-                    pos_score += 20
+                    pos_score += 600
                 if len(line) == 1:
                     pos_score += 5
 
@@ -69,21 +69,21 @@ def find_position_score(lines, now_coord_all_move_and_color):
             check_isolated = check_line_isolated(line, now_coord_all_move_and_color, BLACK)
             if check_isolated == 0:
                 if len(line) == 4:
-                    pos_score -= 250
+                    pos_score -= 1750
                 if len(line) == 3:
-                    pos_score -= 70
+                    pos_score -= 300
                 if len(line) == 2:
-                    pos_score -= 40
+                    pos_score -= 140
                 if len(line) == 1:
                     pos_score -= 10
 
             if check_isolated == 1:
                 if len(line) == 4:
-                    pos_score -= 100
+                    pos_score -= 500
                 if len(line) == 3:
-                    pos_score -= 40
+                    pos_score -= 160
                 if len(line) == 2:
-                    pos_score -= 20
+                    pos_score -= 600
                 if len(line) == 1:
                     pos_score -= 5
     return pos_score
@@ -145,7 +145,7 @@ def minimax(game_state, depth, maximizingPlayer, alpha=float('-inf'), beta=float
         return (find_position_score((game_state[0][0], game_state[0][1]), game_state[1]), None)
 
     if maximizingPlayer:
-        value = float('-inf')
+        value = -float('inf')
         possible_moves = generator_motion(WHITE)
 
         for move in possible_moves:

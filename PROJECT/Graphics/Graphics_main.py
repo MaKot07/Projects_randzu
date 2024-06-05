@@ -11,9 +11,10 @@ def draw_all_game(win_color,number_of_movies, coord_all_move_and_color):
     text_output_number_of_movies(number_of_movies)
     if win_color != None:
         text_win(win_color)
+    draw_button_newgame()
+
     pygame.display.update()
     #pygame.time.delay(120)
-
 
 
 def draw_main_board(cell_qty, cell_size, cell_size_ramka):
@@ -27,8 +28,7 @@ def draw_main_board(cell_qty, cell_size, cell_size_ramka):
     for y in range(cell_qty):
         for x in range(cell_qty):
             pygame.draw.rect(screen, colors, (x * (cell_size + 2) + board_shift, y * (cell_size + 2) + board_shift, cell_size, cell_size))
-            pygame.draw.rect(screen, BLACK,
-                             (x * cell_size_ramka + board_shift, y * cell_size_ramka + board_shift, cell_size_ramka, cell_size_ramka), 2)
+            pygame.draw.rect(screen, BLACK,(x * cell_size_ramka + board_shift, y * cell_size_ramka + board_shift, cell_size_ramka, cell_size_ramka), 2)
 
             text1 = f1.render(f'{15 - y}', 1, BLACK)
         if 15 - y < 10:
@@ -54,6 +54,11 @@ def text_output_number_of_movies(number_of_movies):
 
     #text_move = f1.render(f'Ходы: {coord_all_move_and_color}', 1, BLACK)
     #screen.blit(text_move, (100, 750))
+
+def draw_button_newgame():
+    pygame.draw.rect(screen, (40, 224, 132), (700, 180, 140, 70))
+    text = f1.render(f'NEW GAME', 1, BLACK)
+    screen.blit(text, (700, 200))
 
 def text_win(color):
     if color == BLACK:
