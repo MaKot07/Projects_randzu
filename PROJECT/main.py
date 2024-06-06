@@ -21,7 +21,7 @@ while run:
     event = now_event()
 
     if number_of_movies % 2 != 0 and win_color == None:
-        best_value, (index_x_rect, index_y_rect) = minimax(((copy.copy(all_line_blackplayer), copy.copy(all_line_whiteplayer)), coord_all_move_and_color), 25, True, float('-inf'), float('inf'))
+        best_value, (index_x_rect, index_y_rect) = minimax(((copy.copy(all_line_blackplayer), copy.copy(all_line_whiteplayer)), coord_all_move_and_color), 10, True, float('-inf'), float('inf'))
         coord_all_move_and_color.append(((index_x_rect, index_y_rect), color_computer))
         number_of_movies += 1
 
@@ -29,7 +29,10 @@ while run:
             adding_lines(index_x_rect, index_y_rect, all_line_whiteplayer, color_computer, coord_all_move_and_color)
         else:
             adding_lines(index_x_rect, index_y_rect, all_line_blackplayer, color_computer, coord_all_move_and_color)
-        win_color = check_colors_win(coord_all_move_and_color)
+        win_color = check_colors_win(coord_all_move_and_color, all_line_blackplayer, all_line_whiteplayer)
+
+        position_score = find_position_score((all_line_blackplayer, all_line_whiteplayer), coord_all_move_and_color)
+        print(position_score)
 
     else:
         if event != None:
@@ -51,10 +54,8 @@ while run:
                     else:
                         adding_lines(index_x_rect, index_y_rect, all_line_blackplayer, color_player, coord_all_move_and_color)
                     print(all_line_blackplayer)
-                    win_color = check_colors_win(coord_all_move_and_color)
+                    win_color = check_colors_win(coord_all_move_and_color, all_line_blackplayer, all_line_whiteplayer)
 
-                    position_score = find_position_score((all_line_blackplayer, all_line_whiteplayer), coord_all_move_and_color)
-                    print(position_score)
 
                 check_newgame = check_want_newgame(check_x, check_y)
                 if check_newgame == True:

@@ -80,9 +80,9 @@ def check_condition_win(all_line, now_coord_all_move_and_color):
     else:
         return False
 
-def check_colors_win(now_coord_all_move_and_color):
-    check_win_white = check_condition_win(all_line_whiteplayer, now_coord_all_move_and_color)
-    check_win_black = check_condition_win(all_line_blackplayer, now_coord_all_move_and_color)
+def check_colors_win(now_coord_all_move_and_color, now_all_line_blackplayer, now_all_line_whiteplayer):
+    check_win_white = check_condition_win(now_all_line_whiteplayer, now_coord_all_move_and_color)
+    check_win_black = check_condition_win(now_all_line_blackplayer, now_coord_all_move_and_color)
 
     if check_win_black:
         return BLACK
@@ -270,13 +270,13 @@ def now_event():
 
 
 
-def check_motion(x, y, coord_all_move_and_color ):
+def check_motion(x, y, now_coord_all_move_and_color ):
     fl = False
     x_rect = round(x / cell_size_ramka)
     y_rect = round(y / cell_size_ramka)
 
     if x <= (cell_qty * cell_size_ramka) and x >= 0 and y <= (cell_qty * cell_size_ramka) and y >= 0:
-        if ((x_rect, y_rect), WHITE) not in coord_all_move_and_color and ((x_rect, y_rect), BLACK) not in coord_all_move_and_color:
+        if ((x_rect, y_rect), WHITE) not in now_coord_all_move_and_color and ((x_rect, y_rect), BLACK) not in now_coord_all_move_and_color:
             fl = True
 
     if fl == True:
@@ -285,11 +285,11 @@ def check_motion(x, y, coord_all_move_and_color ):
         return False
 
 
-def check_motion_for_generator(x, y, coord_all_move_and_color):
+def check_motion_for_generator(x, y, now_coord_all_move_and_color):
     fl = False
 
     if x <= cell_qty and x >= 0 and y <= cell_qty and y >= 0:
-        if ((x, y), WHITE) not in coord_all_move_and_color and ((x, y), BLACK) not in coord_all_move_and_color:
+        if ((x, y), WHITE) not in now_coord_all_move_and_color and ((x, y), BLACK) not in now_coord_all_move_and_color:
             fl = True
 
     if fl == True:
@@ -299,11 +299,11 @@ def check_motion_for_generator(x, y, coord_all_move_and_color):
 
 
 
-def check_motion_for_pose_score(x_rect, y_rect, coord_all_move_and_color):
+def check_motion_for_pose_score(x_rect, y_rect, now_coord_all_move_and_color):
     fl = False
 
     if x_rect <= cell_qty and x_rect >= 0 and y_rect <= cell_qty and y_rect >= 0:
-        if ((x_rect, y_rect), WHITE) not in coord_all_move_and_color and ((x_rect, y_rect), BLACK) not in coord_all_move_and_color:
+        if ((x_rect, y_rect), WHITE) not in now_coord_all_move_and_color and ((x_rect, y_rect), BLACK) not in now_coord_all_move_and_color:
             fl = True
 
     if fl == True:

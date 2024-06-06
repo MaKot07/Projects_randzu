@@ -5,7 +5,7 @@ import copy
 
 coord_all_move_and_color = []
 
-def generator_motion(color_for_gen):
+def generator_motion(color_for_gen, now_coord_all_move_and_color):
 
     sgen_motion = []
 
@@ -13,7 +13,7 @@ def generator_motion(color_for_gen):
     coord_down_border = -1
     coord_right_border = -1
     coord_up_border = 100
-    for (x_coord_enemy, y_cooord_enemy), color_enemy in coord_all_move_and_color:
+    for (x_coord_enemy, y_cooord_enemy), color_enemy in now_coord_all_move_and_color:
         if color_for_gen != color_enemy:
             if x_coord_enemy < coord_left_border:
                 coord_left_border = x_coord_enemy
@@ -26,7 +26,7 @@ def generator_motion(color_for_gen):
 
     for x_coord in range(coord_left_border-2, coord_right_border + 3):
         for y_coord in range(coord_up_border-2, coord_down_border + 3):
-            check_new_motion = check_motion_for_generator(x_coord, y_coord, coord_all_move_and_color)
+            check_new_motion = check_motion_for_generator(x_coord, y_coord, now_coord_all_move_and_color)
             if check_new_motion:
                 if (x_coord, y_coord) not in sgen_motion:
                     sgen_motion.append((x_coord, y_coord))
@@ -58,7 +58,7 @@ def find_position_score(lines, now_coord_all_move_and_color):
                 if len(line) == 3:
                     pos_score += 160
                 if len(line) == 2:
-                    pos_score += 600
+                    pos_score += 60
                 if len(line) == 1:
                     pos_score += 5
 
@@ -83,15 +83,15 @@ def find_position_score(lines, now_coord_all_move_and_color):
                 if len(line) == 3:
                     pos_score -= 160
                 if len(line) == 2:
-                    pos_score -= 600
+                    pos_score -= 60
                 if len(line) == 1:
                     pos_score -= 5
     return pos_score
 
 
-def check_line_isolated(our_check_line, now_coord_all_move_and_color, all_color_line):
+def check_line_isolated(our_check_line, now_coord_all_move_and_color, color_our_line):
     if len(our_check_line) == 1:
-        if all_color_line == BLACK:
+        if color_our_line == BLACK:
             near_chips = find_near_chips(our_check_line[0][0], our_check_line[0][1], WHITE, now_coord_all_move_and_color)
             for new_coord_x, new_coord_y in near_chips:
                 check_coord_new = check_motion_for_pose_score(new_coord_x, new_coord_y, now_coord_all_move_and_color)
@@ -146,7 +146,7 @@ def minimax(game_state, depth, maximizingPlayer, alpha=float('-inf'), beta=float
 
     if maximizingPlayer:
         value = -float('inf')
-        possible_moves = generator_motion(WHITE)
+        possible_moves = generator_motion(WHITE, game_state[1])
 
         for move in possible_moves:
             child = get_new_state(move, WHITE, (game_state[0][0], game_state[0][1]), game_state[1])
@@ -162,7 +162,7 @@ def minimax(game_state, depth, maximizingPlayer, alpha=float('-inf'), beta=float
 
     else:
         value = float('inf')
-        possible_moves = generator_motion(BLACK)
+        possible_moves = generator_motion(BLACK, game_state[1])
 
         for move in possible_moves:
             child = get_new_state(move, BLACK, (game_state[0][0], game_state[0][1]), game_state[1])
@@ -177,26 +177,5 @@ def minimax(game_state, depth, maximizingPlayer, alpha=float('-inf'), beta=float
             beta = min(beta, value)
 
     return (value, best_movement)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
