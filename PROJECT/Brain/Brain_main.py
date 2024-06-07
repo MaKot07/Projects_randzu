@@ -3,7 +3,7 @@ from analitycs.analitycs_main import *
 import random
 import copy
 
-coord_all_move_and_color = []
+now_coord_all_move_and_color = []
 
 def generator_motion(color_for_gen, now_coord_all_move_and_color):
 

@@ -3,70 +3,96 @@ import pygame
 from Const import *
 
 
+class Game_Graphics:
 
-def draw_all_game(win_color,number_of_movies, coord_all_move_and_color):
-    draw_screen()
-    draw_main_board(cell_qty, cell_size, cell_size_ramka)
-    draw_all_shashky(coord_all_move_and_color)
-    text_output_number_of_movies(number_of_movies)
-    if win_color != None:
-        text_win(win_color)
-    draw_button_newgame()
+    __cell_qty = 14
+    __cell_size = 40
+    __cell_size_ramka = 42
+    __colors = (234, 237, 204)
+    __board_shift = 30
 
-    pygame.display.update()
-    #pygame.time.delay(120)
+    def __init__(self, now_coord_all_move_and_color, number_of_movies):
+        self.__now_coord_all_move_and_color = now_coord_all_move_and_color
+        self.__number_of_movies = number_of_movies
 
+    def draw_all_game(self):
+        self.draw_screen()
+        self.draw_main_board()
+        self.draw_all_shashky()
+        self.text_output_number_of_movies()
+        #if win_color != None:
+            #text_win(win_color)
+        self.draw_button_newgame()
 
-def draw_main_board(cell_qty, cell_size, cell_size_ramka):
-    global text1
-    board_words = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O']
+        pygame.display.update()
+        # pygame.time.delay(120)
 
-    for x in range(cell_qty + 1):
-        text1 = f1.render(f'{board_words[x]}', 1, BLACK)
-        screen.blit(text1, (x * cell_size_ramka + 23, 0))
+    #@staticmethod
+    def draw_main_board(self):
+        board_words = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O']
 
-    for y in range(cell_qty):
-        for x in range(cell_qty):
-            pygame.draw.rect(screen, colors, (x * (cell_size + 2) + board_shift, y * (cell_size + 2) + board_shift, cell_size, cell_size))
-            pygame.draw.rect(screen, BLACK,(x * cell_size_ramka + board_shift, y * cell_size_ramka + board_shift, cell_size_ramka, cell_size_ramka), 2)
+        for x in range(Game_Graphics.__cell_qty + 1):
+            text1 = f1.render(f'{board_words[x]}', 1, BLACK)
+            screen.blit(text1, (x * Game_Graphics.__cell_size_ramka + 23, 0))
 
-            text1 = f1.render(f'{15 - y}', 1, BLACK)
-        if 15 - y < 10:
-            screen.blit(text1, (5, y * cell_size_ramka + 20))
+        for y in range(Game_Graphics.__cell_qty):
+            for x in range(Game_Graphics.__cell_qty):
+                pygame.draw.rect(screen, colors, (x * (Game_Graphics.__cell_size + 2) + Game_Graphics.__board_shift, y * (Game_Graphics.__cell_size + 2) + Game_Graphics.__board_shift, Game_Graphics.__cell_size, Game_Graphics.__cell_size))
+                pygame.draw.rect(screen, BLACK, (
+                x * Game_Graphics.__cell_size_ramka + Game_Graphics.__board_shift, y * Game_Graphics.__cell_size_ramka + Game_Graphics.__board_shift, Game_Graphics.__cell_size_ramka, Game_Graphics.__cell_size_ramka),2)
+
+                text1 = f1.render(f'{15 - y}', 1, BLACK)
+            if 15 - y < 10:
+                screen.blit(text1, (5, y * Game_Graphics.__cell_size_ramka + 20))
+            else:
+
+                screen.blit(text1, (0, y * Game_Graphics.__cell_size_ramka + 20))
+            if y == Game_Graphics.__cell_qty - 1:
+                text2 = f1.render('1', 1, BLACK)
+                screen.blit(text2, (5, (y + 1) * Game_Graphics.__cell_size_ramka + 20))
+
+    #@staticmethod
+    def draw_all_shashky(self):
+        for (index_x_rect, index_y_rect), color_player in self.__now_coord_all_move_and_color:
+            pygame.draw.circle(screen, color_player, (index_x_rect * cell_size_ramka + board_shift, index_y_rect * cell_size_ramka + board_shift), 10)
+
+    #@staticmethod
+    def draw_screen(self):
+        screen.fill((155, 155, 155))
+
+    #@staticmethod
+    def text_output_number_of_movies(self):
+        text = f1.render(f'Количество ходов: {self.__number_of_movies}', 1, BLACK)
+        screen.blit(text, (100, 700))
+
+        # text_move = f1.render(f'Ходы: {coord_all_move_and_color}', 1, BLACK)
+        # screen.blit(text_move, (100, 750))
+
+    #@staticmethod
+    def draw_button_newgame(self):
+        pygame.draw.rect(screen, (40, 224, 132), (700, 180, 140, 70))
+        text = f1.render(f'NEW GAME', 1, BLACK)
+        screen.blit(text, (700, 200))
+
+    def text_win(self, color):
+        if color == BLACK:
+            text = f1.render(f'Игра закончилась. Победили черные!!', 1, BLACK)
+            screen.blit(text, (100, 850))
         else:
+            text = f1.render(f'Игра закончилась. Победили белые!!', 1, BLACK)
+            screen.blit(text, (100, 850))
 
-            screen.blit(text1, (0, y * cell_size_ramka + 20))
-        if y == cell_qty - 1:
-            text2 = f1.render('1', 1, BLACK)
-            screen.blit(text2, (5, (y + 1) * cell_size_ramka + 20))
+    def change_color_player(self, color_player):
+        if color_player == BLACK:
+            color_player = WHITE
+        else:
+            color_player = BLACK
 
+        return color_player
 
-def draw_all_shashky(coord_all_move_and_color):
-    for (index_x_rect, index_y_rect), color_player in coord_all_move_and_color:
-        pygame.draw.circle(screen, color_player,(index_x_rect * cell_size_ramka + board_shift, index_y_rect * cell_size_ramka + board_shift), 10)
+    def set_coord(self, x, y, color):
+        self.__now_coord_all_move_and_color.append(((x,y), color))
 
-def draw_screen():
-    screen.fill((155, 155, 155))
-
-def text_output_number_of_movies(number_of_movies):
-    text = f1.render(f'Количество ходов: {number_of_movies}', 1, BLACK)
-    screen.blit(text, (100, 700))
-
-    #text_move = f1.render(f'Ходы: {coord_all_move_and_color}', 1, BLACK)
-    #screen.blit(text_move, (100, 750))
-
-def draw_button_newgame():
-    pygame.draw.rect(screen, (40, 224, 132), (700, 180, 140, 70))
-    text = f1.render(f'NEW GAME', 1, BLACK)
-    screen.blit(text, (700, 200))
-
-def text_win(color):
-    if color == BLACK:
-        text = f1.render(f'Игра закончилась. Победили черные!!', 1, BLACK)
-        screen.blit(text, (100, 850))
-    else:
-        text = f1.render(f'Игра закончилась. Победили белые!!', 1, BLACK)
-        screen.blit(text, (100, 850))
 
 
 def give_coord(events):
@@ -82,13 +108,7 @@ def give_coord_rect(events):
 
     return index_x_rect,index_y_rect
 
-def change_color_player(color_player):
-    if color_player == BLACK:
-        color_player = WHITE
-    else:
-        color_player = BLACK
 
-    return color_player
 
 
 
