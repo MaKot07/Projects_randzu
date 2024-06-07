@@ -84,10 +84,11 @@ def check_colors_win(now_coord_all_move_and_color, now_all_line_blackplayer, now
     check_win_white = check_condition_win(now_all_line_whiteplayer, now_coord_all_move_and_color)
     check_win_black = check_condition_win(now_all_line_blackplayer, now_coord_all_move_and_color)
 
-    if check_win_black:
-        return BLACK
     if check_win_white:
         return WHITE
+    if check_win_black:
+        return BLACK
+
 
     return None
 

@@ -24,8 +24,8 @@ def generator_motion(color_for_gen, now_coord_all_move_and_color):
             if y_cooord_enemy < coord_up_border:
                 coord_up_border = y_cooord_enemy
 
-    for x_coord in range(coord_left_border-2, coord_right_border + 3):
-        for y_coord in range(coord_up_border-2, coord_down_border + 3):
+    for x_coord in range(coord_left_border-1, coord_right_border + 2):
+        for y_coord in range(coord_up_border-1, coord_down_border + 2):
             check_new_motion = check_motion_for_generator(x_coord, y_coord, now_coord_all_move_and_color)
             if check_new_motion:
                 if (x_coord, y_coord) not in sgen_motion:
@@ -39,53 +39,53 @@ def find_position_score(lines, now_coord_all_move_and_color):
     pos_score = 0
     for line in lines[1]:
         if len(line) >= 5:
-            pos_score += 5000
+            pos_score += 500000
         else:
             check_isolated = check_line_isolated(line, now_coord_all_move_and_color, WHITE)
             if check_isolated == 0:
                 if len(line) == 4:
-                    pos_score += 1750
+                    pos_score += 17500
                 if len(line) == 3:
-                    pos_score += 300
+                    pos_score += 3000
                 if len(line) == 2:
                     pos_score += 140
                 if len(line) == 1:
-                    pos_score += 10
+                    pos_score += 5
 
             if check_isolated == 1:
                 if len(line) == 4:
-                    pos_score += 500
+                    pos_score += 1500
                 if len(line) == 3:
-                    pos_score += 160
+                    pos_score += 560
                 if len(line) == 2:
                     pos_score += 60
                 if len(line) == 1:
-                    pos_score += 5
+                    pos_score += 10
 
     for line in lines[0]:
         if len(line) >= 5:
-            pos_score -= 5000
+            pos_score -= 500000
         else:
             check_isolated = check_line_isolated(line, now_coord_all_move_and_color, BLACK)
             if check_isolated == 0:
                 if len(line) == 4:
-                    pos_score -= 1750
+                    pos_score -= 17500
                 if len(line) == 3:
-                    pos_score -= 300
+                    pos_score -= 3000
                 if len(line) == 2:
                     pos_score -= 140
                 if len(line) == 1:
-                    pos_score -= 10
+                    pos_score -= 5
 
             if check_isolated == 1:
                 if len(line) == 4:
-                    pos_score -= 500
+                    pos_score -= 1500
                 if len(line) == 3:
-                    pos_score -= 160
+                    pos_score -= 560
                 if len(line) == 2:
                     pos_score -= 60
                 if len(line) == 1:
-                    pos_score -= 5
+                    pos_score -= 10
     return pos_score
 
 
@@ -138,10 +138,8 @@ def get_new_state(new_move, color_new_move, new_all_line, last_coord_all_move_an
 
 def minimax(game_state, depth, maximizingPlayer, alpha=float('-inf'), beta=float('inf')):
     best_movement = (0,0)
-    if depth == 0 or check_condition_win(game_state[0][0], game_state[1]) == True or check_condition_win(game_state[0][0], game_state[1]) == None:
-        return (find_position_score((game_state[0][0], game_state[0][1]), game_state[1]), None)
-
-    if depth == 0 or check_condition_win(game_state[0][1], game_state[1]) == True or check_condition_win(game_state[0][1], game_state[1]) == None:
+    if depth == 0 or check_colors_win(game_state[1], game_state[0][0], game_state[0][1]) != None:
+        print(100 - depth, check_colors_win(game_state[1], game_state[0][0], game_state[0][1]))
         return (find_position_score((game_state[0][0], game_state[0][1]), game_state[1]), None)
 
     if maximizingPlayer:
@@ -151,12 +149,12 @@ def minimax(game_state, depth, maximizingPlayer, alpha=float('-inf'), beta=float
         for move in possible_moves:
             child = get_new_state(move, WHITE, (game_state[0][0], game_state[0][1]), game_state[1])
 
-            tmp, _ = minimax(child, depth - 1, False, alpha, beta)
+            tmp, _ = minimax(child, depth - 1, not maximizingPlayer, alpha, beta)
             if tmp > value:
                 value = tmp
                 best_movement = move
 
-            if value > beta:
+            if value >= beta:
                 break
             alpha = max(alpha, value)
 
@@ -167,12 +165,12 @@ def minimax(game_state, depth, maximizingPlayer, alpha=float('-inf'), beta=float
         for move in possible_moves:
             child = get_new_state(move, BLACK, (game_state[0][0], game_state[0][1]), game_state[1])
 
-            tmp, _ = minimax(child, depth - 1, True, alpha, beta)
+            tmp, _ = minimax(child, depth - 1, not maximizingPlayer, alpha, beta)
             if tmp < value:
                 value = tmp
                 best_movement = move
 
-            if value < alpha:
+            if value <= alpha:
                 break
             beta = min(beta, value)
 
