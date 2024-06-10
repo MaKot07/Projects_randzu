@@ -7,14 +7,14 @@ from Const import *
 import copy
 
 win_color = None
-color_player = BLACK
+color_user = BLACK
 color_computer = WHITE
 number_of_movies = 0
 
 game_graphics = Game_Graphics(now_coord_all_move_and_color, number_of_movies)
-game_graphics.draw_all_game()
+game_graphics.draw_all_game(win_color)
 
-game_player_analityc = Analitycs(now_coord_all_move_and_color, color_player)
+game_player_analityc = Analitycs(now_coord_all_move_and_color, color_user)
 
 
 run = True
@@ -22,18 +22,21 @@ while run:
 
     event = game_player_analityc.now_event()
 
-    if number_of_movies % 2 != 0 and win_color == None and False:
-        print("!@")
-        #best_value, (index_x_rect, index_y_rect) = minimax(((game_player_analityc.give_line(), copy.copy(all_line_whiteplayer)), copy.copy(now_coord_all_move_and_color)), 5, True, float('-inf'), float('inf'))
-        #game_graphics.set_coord(index_x_rect, index_y_rect, color_computer)
-        #number_of_movies += 1
+    if game_graphics.give_number_move() % 2 != 0 and win_color == None:
+        MinMax = Intelect(game_player_analityc.give_all_line_blackplayer(), game_player_analityc.give_all_line_whiteplayer(), game_player_analityc.give_chips(), color_computer)
+        best_value, (index_x_rect, index_y_rect) = MinMax.minimax(5, True, float('-inf'), float('inf'))
 
-        #if color_computer == WHITE:
-            #adding_lines(index_x_rect, index_y_rect, all_line_whiteplayer, color_computer, all_coord_all_move_and_color)
-        #else:
-            #adding_lines(index_x_rect, index_y_rect, all_line_blackplayer, color_computer, all_coord_all_move_and_color)
-        #win_color = check_colors_win(all_coord_all_move_and_color, all_line_blackplayer, all_line_whiteplayer)
+        game_graphics.set_coord(index_x_rect, index_y_rect, color_computer)
+        game_player_analityc.set_coord(index_x_rect, index_y_rect, color_computer)
 
+        game_graphics.set_number_move()
+
+        game_player_analityc.adding_lines(index_x_rect, index_y_rect, color_computer)
+
+
+        win_color = game_player_analityc.check_colors_win()
+
+        del MinMax
         #position_score = find_position_score((all_line_blackplayer, all_line_whiteplayer), all_coord_all_move_and_color)
         #print(position_score, "!@#@#", best_value)
 
@@ -49,15 +52,16 @@ while run:
                 check_correct_motion = game_player_analityc.check_motion(check_x, check_y)
                 if check_correct_motion == True and win_color == None:
                     index_x_rect, index_y_rect = give_coord_rect(event)
-                    game_graphics.set_coord(index_x_rect, index_y_rect, color_player)
+                    game_graphics.set_coord(index_x_rect, index_y_rect, color_user)
+                    game_player_analityc.set_coord(index_x_rect, index_y_rect, color_user)
 
-                    number_of_movies += 1
-                    if color_player == WHITE:
-                        game_player_analityc.adding_lines(index_x_rect, index_y_rect, color_player)
-                    else:
-                        game_player_analityc.adding_lines(index_x_rect, index_y_rect, color_player)
+
+                    game_graphics.set_number_move()
+                    game_player_analityc.adding_lines(index_x_rect, index_y_rect, color_user)
+
 
                     print(game_player_analityc.give_all_line_blackplayer())
+                    print(game_player_analityc.give_all_line_whiteplayer())
                     win_color = game_player_analityc.check_colors_win()
 
 
@@ -71,5 +75,5 @@ while run:
                     check_win_white = False
                     coord_all_move_and_color = []
 
-    game_graphics.draw_all_game()
+    game_graphics.draw_all_game(win_color)
 

@@ -1,6 +1,7 @@
 import sys
 import pygame
 from Const import *
+import copy
 
 
 class Game_Graphics:
@@ -12,16 +13,21 @@ class Game_Graphics:
     __board_shift = 30
 
     def __init__(self, now_coord_all_move_and_color, number_of_movies):
-        self.__now_coord_all_move_and_color = now_coord_all_move_and_color
+        self.__now_coord_all_move_and_color = copy.copy(now_coord_all_move_and_color)
         self.__number_of_movies = number_of_movies
 
-    def draw_all_game(self):
+    def set_number_move(self):
+        self.__number_of_movies += 1
+    def give_number_move(self):
+        return self.__number_of_movies
+
+    def draw_all_game(self, win_color):
         self.draw_screen()
         self.draw_main_board()
         self.draw_all_shashky()
         self.text_output_number_of_movies()
-        #if win_color != None:
-            #text_win(win_color)
+        if win_color != None:
+            self.text_win(win_color)
         self.draw_button_newgame()
 
         pygame.display.update()
