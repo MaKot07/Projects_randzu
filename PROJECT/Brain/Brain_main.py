@@ -27,29 +27,27 @@ class Intelect(Analitycs):
         coord_right_border = -1
         coord_up_border = 100
         for (x_coord_enemy, y_cooord_enemy), color_enemy in self.now_coord_all_move_and_color:
-            if self.color != color_enemy:
-                if x_coord_enemy < coord_left_border:
-                    coord_left_border = x_coord_enemy
-                if x_coord_enemy > coord_right_border:
-                    coord_right_border = x_coord_enemy
-                if y_cooord_enemy > coord_down_border:
-                    coord_down_border = y_cooord_enemy
-                if y_cooord_enemy < coord_up_border:
-                    coord_up_border = y_cooord_enemy
+            if x_coord_enemy < coord_left_border:
+                coord_left_border = x_coord_enemy
+            if x_coord_enemy > coord_right_border:
+                coord_right_border = x_coord_enemy
+            if y_cooord_enemy > coord_down_border:
+                coord_down_border = y_cooord_enemy
+            if y_cooord_enemy < coord_up_border:
+                coord_up_border = y_cooord_enemy
 
-        for x_coord in range(coord_left_border - 1, coord_right_border + 1):
-            for y_coord in range(coord_up_border - 1, coord_down_border + 1):
+        for x_coord in range(coord_left_border - 1, coord_right_border + 2):
+            for y_coord in range(coord_up_border - 1, coord_down_border + 2):
                 check_new_motion = self.check_motion_for_generator(x_coord, y_coord)
                 if check_new_motion:
-                    if (x_coord, y_coord) not in sgen_motion:
-                        sgen_motion.append((x_coord, y_coord))
+                    sgen_motion.append((x_coord, y_coord))
         return sgen_motion
 
     def find_position_score(self):
         pos_score = 0
         for line in self.now_all_line_whiteplayer:
             if len(line) >= 5:
-                pos_score += 500000
+                pos_score += 1000000
             else:
                 check_isolated = self.check_line_isolated(line, WHITE)
                 if check_isolated == 0:
@@ -74,7 +72,7 @@ class Intelect(Analitycs):
 
         for line in self.now_all_line_blackplayer:
             if len(line) >= 5:
-                pos_score -= 500000
+                pos_score -= 1000000
             else:
                 check_isolated = self.check_line_isolated(line, BLACK)
                 if check_isolated == 0:
@@ -97,6 +95,15 @@ class Intelect(Analitycs):
                     if len(line) == 1:
                         pos_score -= 10
         return pos_score
+
+    def find_win_position_score(self):
+        pos_score = 0
+        if self.check_colors_win() == WHITE:
+            pos_score += 1000000
+        else:
+            pos_score -= 1000000
+        return pos_score
+
 
     def check_line_isolated(self, our_check_line, color_our_line):
         if len(our_check_line) == 1:
@@ -132,26 +139,23 @@ class Intelect(Analitycs):
             else:
                 return 0
 
-    def get_new_state(self, new_move):
-        new_coord_all_move_and_color = copy.copy(self.now_coord_all_move_and_color)
-        new_all_line = [self.now_all_line_blackplayer, self.now_all_line_whiteplayer]
+    def get_new_state(self, new_move, color):
+        new_coord_all_move_and_color = copy.copy(self.now_coord_all_move_and_color) + [(new_move, self.color)]
+        new_all_line = copy.copy([self.now_all_line_blackplayer, self.now_all_line_whiteplayer])
 
-        if self.color == WHITE:
-            self.adding_lines(new_move[0], new_move[1], self.color)
-            createn_new_state = Intelect(new_all_line[0], new_all_line[1], self.now_coord_all_move_and_color, WHITE)
-        else:
-            self.adding_lines(new_move[0], new_move[1], self.color)
-            createn_new_state = Intelect(new_all_line[0], new_all_line[1], now_coord_all_move_and_color, BLACK)
-
-
+        self.adding_lines(new_move[0], new_move[1], self.color)
+        createn_new_state = Intelect(new_all_line[0], new_all_line[1], new_coord_all_move_and_color, color)
 
         return createn_new_state
 
     def minimax(self, depth, maximizingPlayer, alpha=float('-inf'), beta=float('inf')):
         best_movement = (0, 0)
 
-        if depth == 0 or self.check_colors_win() != None:
-            print(depth, self.check_colors_win())
+        if self.check_colors_win() != None:
+            if self.check_colors_win() == BLACK:
+                print(depth, self.check_colors_win(), self.find_win_position_score())
+            return (self.find_win_position_score(), None)
+        if depth == 0:
             return (self.find_position_score(), None)
 
         if maximizingPlayer:
@@ -159,7 +163,7 @@ class Intelect(Analitycs):
             possible_moves = self.generator_motion()
 
             for move in possible_moves:
-                child = self.get_new_state(move)
+                child = self.get_new_state(move, BLACK)
 
                 tmp, _ = child.minimax(depth - 1, not maximizingPlayer, alpha, beta)
                 del child
@@ -177,7 +181,7 @@ class Intelect(Analitycs):
             possible_moves = self.generator_motion()
 
             for move in possible_moves:
-                child = self.get_new_state(move)
+                child = self.get_new_state(move, WHITE)
 
                 tmp, _ = child.minimax(depth - 1, not maximizingPlayer, alpha, beta)
                 del child

@@ -24,7 +24,7 @@ while run:
 
     if game_graphics.give_number_move() % 2 != 0 and win_color == None:
         MinMax = Intelect(game_player_analityc.give_all_line_blackplayer(), game_player_analityc.give_all_line_whiteplayer(), game_player_analityc.give_chips(), color_computer)
-        best_value, (index_x_rect, index_y_rect) = MinMax.minimax(5, True, float('-inf'), float('inf'))
+        best_value, (index_x_rect, index_y_rect) = MinMax.minimax(3, True, float('-inf'), float('inf'))
 
         game_graphics.set_coord(index_x_rect, index_y_rect, color_computer)
         game_player_analityc.set_coord(index_x_rect, index_y_rect, color_computer)
@@ -37,8 +37,10 @@ while run:
         win_color = game_player_analityc.check_colors_win()
 
         del MinMax
-        #position_score = find_position_score((all_line_blackplayer, all_line_whiteplayer), all_coord_all_move_and_color)
-        #print(position_score, "!@#@#", best_value)
+
+        now_pose_score = Intelect(game_player_analityc.give_all_line_blackplayer(), game_player_analityc.now_all_line_whiteplayer,game_player_analityc.now_coord_all_move_and_color, game_player_analityc.color)
+        print("Score ", now_pose_score.find_position_score())
+        del now_pose_score
 
     else:
         if event != None:
@@ -60,8 +62,7 @@ while run:
                     game_player_analityc.adding_lines(index_x_rect, index_y_rect, color_user)
 
 
-                    print(game_player_analityc.give_all_line_blackplayer())
-                    print(game_player_analityc.give_all_line_whiteplayer())
+                    print("Black",game_player_analityc.give_all_line_blackplayer())
                     win_color = game_player_analityc.check_colors_win()
 
 
