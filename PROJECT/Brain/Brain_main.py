@@ -46,54 +46,48 @@ class Intelect(Analitycs):
     def find_position_score(self):
         pos_score = 0
         for line in self.now_all_line_whiteplayer:
-            if len(line) >= 5:
-                pos_score += 1000000
-            else:
-                check_isolated = self.check_line_isolated(line, WHITE)
-                if check_isolated == 0:
-                    if len(line) == 4:
-                        pos_score += 17500
-                    if len(line) == 3:
-                        pos_score += 3000
-                    if len(line) == 2:
-                        pos_score += 140
-                    if len(line) == 1:
-                        pos_score += 5
+            check_isolated = self.check_line_isolated(line, WHITE)
+            if check_isolated == 0:
+                if len(line) == 4:
+                    pos_score += 17500
+                if len(line) == 3:
+                    pos_score += 3000
+                if len(line) == 2:
+                    pos_score += 140
+                if len(line) == 1:
+                    pos_score += 5
 
-                if check_isolated == 1:
-                    if len(line) == 4:
-                        pos_score += 9500
-                    if len(line) == 3:
-                        pos_score += 560
-                    if len(line) == 2:
-                        pos_score += 60
-                    if len(line) == 1:
-                        pos_score += 10
+            if check_isolated == 1:
+                if len(line) == 4:
+                    pos_score += 9500
+                if len(line) == 3:
+                    pos_score += 560
+                if len(line) == 2:
+                    pos_score += 60
+                if len(line) == 1:
+                    pos_score += 10
 
         for line in self.now_all_line_blackplayer:
-            if len(line) >= 5:
-                pos_score -= 1000000
-            else:
-                check_isolated = self.check_line_isolated(line, BLACK)
-                if check_isolated == 0:
-                    if len(line) == 4:
-                        pos_score -= 17500
-                    if len(line) == 3:
-                        pos_score -= 3000
-                    if len(line) == 2:
-                        pos_score -= 140
-                    if len(line) == 1:
-                        pos_score -= 5
+            check_isolated = self.check_line_isolated(line, BLACK)
+            if check_isolated == 0:
+                if len(line) == 4:
+                    pos_score -= 17500
+                if len(line) == 3:
+                    pos_score -= 3000
+                if len(line) == 2:
+                    pos_score -= 140
+                if len(line) == 1:
+                    pos_score -= 5
 
-                if check_isolated == 1:
-                    if len(line) == 4:
-                        pos_score -= 9500
-                    if len(line) == 3:
-                        pos_score -= 560
-                    if len(line) == 2:
-                        pos_score -= 60
-                    if len(line) == 1:
-                        pos_score -= 10
+            if check_isolated == 1:
+                if len(line) == 4:
+                    pos_score -= 9500
+                if len(line) == 3:
+                    pos_score -= 560
+                if len(line) == 2:
+                    pos_score -= 60
+                if len(line) == 1:
+                    pos_score -= 10
         return pos_score
 
     def find_win_position_score(self):
@@ -152,10 +146,11 @@ class Intelect(Analitycs):
         best_movement = (0, 0)
 
         if self.check_colors_win() != None:
-            if self.check_colors_win() == BLACK:
-                print(depth, self.check_colors_win(), self.find_win_position_score())
+            #if self.check_colors_win() == BLACK:
+            print(depth, self.check_colors_win(), self.find_win_position_score())
             return (self.find_win_position_score(), None)
         if depth == 0:
+            #print(depth, self.check_colors_win(), self.find_position_score())
             return (self.find_position_score(), None)
 
         if maximizingPlayer:

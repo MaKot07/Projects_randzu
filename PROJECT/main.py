@@ -68,13 +68,17 @@ while run:
 
                 check_newgame = check_want_newgame(check_x, check_y)
                 if check_newgame == True:
+                    del game_graphics
+                    del game_player_analityc
+
                     win_color = None
                     number_of_movies = 0
-                    all_line_whiteplayer = []
-                    all_line_blackplayer = []
-                    check_win_black = False
-                    check_win_white = False
-                    coord_all_move_and_color = []
+                    now_coord_all_move_and_color = []
+
+                    game_graphics = Game_Graphics(now_coord_all_move_and_color, number_of_movies)
+
+                    game_player_analityc = Analitycs(now_coord_all_move_and_color, color_user)
+
 
     game_graphics.draw_all_game(win_color)
 

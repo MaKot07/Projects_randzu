@@ -15,7 +15,7 @@ class Analitycs:
 
     __check_win_black = False
     __check_win_white = False
-    __cell_qty = 14
+    cell_qty = 14
 
     def __init__(self, now_coord_all_move_and_color, color):
         self.color = copy.copy(color)
@@ -94,8 +94,8 @@ class Analitycs:
             all_line = self.now_all_line_whiteplayer
         fl = False
         check_draw = True
-        for x in range(14 + 1):
-            for y in range(14 + 1):
+        for x in range(cell_qty + 1):
+            for y in range(cell_qty + 1):
                 if (x, y, WHITE) not in self.now_coord_all_move_and_color or (x, y, BLACK) not in self.now_coord_all_move_and_color:
                     check_draw = False
         if check_draw == True:
