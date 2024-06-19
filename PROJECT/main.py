@@ -4,12 +4,18 @@ from Graphics.Graphics_main import *
 from analitycs.analitycs_main import *
 from Brain.Brain_main import *
 from Const import *
-import copy
 
+now_coord_all_move_and_color = []
 win_color = None
-color_user = BLACK
-color_computer = WHITE
+color_user = black
+color_computer = white
 number_of_movies = 0
+
+#variables
+all_line_whiteplayer = []
+all_line_blackplayer = []
+check_win_black = False
+check_win_white = False
 
 game_graphics = Game_Graphics(now_coord_all_move_and_color, number_of_movies)
 game_graphics.draw_all_game(win_color)
@@ -24,14 +30,14 @@ while run:
 
     if game_graphics.give_number_move() % 2 != 0 and win_color == None:
         MinMax = Intelect(game_player_analityc.give_all_line_blackplayer(), game_player_analityc.give_all_line_whiteplayer(), game_player_analityc.give_chips(), color_computer)
-        best_value, (index_x_rect, index_y_rect) = MinMax.minimax(3, True, float('-inf'), float('inf'))
+        best_value, coord_best_move = MinMax.minimax(3, True, float('-inf'), float('inf'))
 
-        game_graphics.set_coord(index_x_rect, index_y_rect, color_computer)
-        game_player_analityc.set_coord(index_x_rect, index_y_rect, color_computer)
+        game_graphics.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
+        game_player_analityc.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
 
         game_graphics.set_number_move()
 
-        game_player_analityc.adding_lines(index_x_rect, index_y_rect, color_computer)
+        game_player_analityc.adding_lines(coord_best_move[0], coord_best_move[1], color_computer)
 
 
         win_color = game_player_analityc.check_colors_win()

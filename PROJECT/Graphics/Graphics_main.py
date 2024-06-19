@@ -1,7 +1,8 @@
-import sys
+#import sys
 import pygame
 from Const import *
 import copy
+#from numba import jit
 
 
 class Game_Graphics:
@@ -18,8 +19,10 @@ class Game_Graphics:
 
     def set_number_move(self):
         self.__number_of_movies += 1
+
     def give_number_move(self):
         return self.__number_of_movies
+
 
     def draw_all_game(self, win_color):
         self.draw_screen()
@@ -44,8 +47,7 @@ class Game_Graphics:
         for y in range(Game_Graphics.__cell_qty):
             for x in range(Game_Graphics.__cell_qty):
                 pygame.draw.rect(screen, colors, (x * (Game_Graphics.__cell_size + 2) + Game_Graphics.__board_shift, y * (Game_Graphics.__cell_size + 2) + Game_Graphics.__board_shift, Game_Graphics.__cell_size, Game_Graphics.__cell_size))
-                pygame.draw.rect(screen, BLACK, (
-                x * Game_Graphics.__cell_size_ramka + Game_Graphics.__board_shift, y * Game_Graphics.__cell_size_ramka + Game_Graphics.__board_shift, Game_Graphics.__cell_size_ramka, Game_Graphics.__cell_size_ramka),2)
+                pygame.draw.rect(screen, BLACK, (x * Game_Graphics.__cell_size_ramka + Game_Graphics.__board_shift, y * Game_Graphics.__cell_size_ramka + Game_Graphics.__board_shift, Game_Graphics.__cell_size_ramka, Game_Graphics.__cell_size_ramka),2)
 
                 text1 = f1.render(f'{15 - y}', 1, BLACK)
             if 15 - y < 10:
@@ -59,8 +61,11 @@ class Game_Graphics:
 
     #@staticmethod
     def draw_all_shashky(self):
-        for (index_x_rect, index_y_rect), color_player in self.__now_coord_all_move_and_color:
-            pygame.draw.circle(screen, color_player, (index_x_rect * cell_size_ramka + board_shift, index_y_rect * cell_size_ramka + board_shift), 10)
+        for index_x_rect, index_y_rect, color_player in self.__now_coord_all_move_and_color:
+            if color_player == black:
+                pygame.draw.circle(screen, BLACK, (index_x_rect * cell_size_ramka + board_shift, index_y_rect * cell_size_ramka + board_shift), 10)
+            else:
+                pygame.draw.circle(screen, WHITE, (index_x_rect * cell_size_ramka + board_shift, index_y_rect * cell_size_ramka + board_shift), 10)
 
     #@staticmethod
     def draw_screen(self):
@@ -81,7 +86,7 @@ class Game_Graphics:
         screen.blit(text, (700, 200))
 
     def text_win(self, color):
-        if color == BLACK:
+        if color == black:
             text = f1.render(f'Игра закончилась. Победили черные!!', 1, BLACK)
             screen.blit(text, (100, 850))
         else:
@@ -89,15 +94,15 @@ class Game_Graphics:
             screen.blit(text, (100, 850))
 
     def change_color_player(self, color_player):
-        if color_player == BLACK:
-            color_player = WHITE
+        if color_player == black:
+            color_player = white
         else:
-            color_player = BLACK
+            color_player = black
 
         return color_player
 
     def set_coord(self, x, y, color):
-        self.__now_coord_all_move_and_color.append(((x,y), color))
+        self.__now_coord_all_move_and_color.append([x,y,color])
 
 
 
