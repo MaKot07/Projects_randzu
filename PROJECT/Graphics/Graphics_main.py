@@ -2,6 +2,7 @@
 import pygame
 from Const import *
 import copy
+import numpy as np
 #from numba import jit
 
 
@@ -14,7 +15,7 @@ class Game_Graphics:
     __board_shift = 30
 
     def __init__(self, now_coord_all_move_and_color, number_of_movies):
-        self.__now_coord_all_move_and_color = copy.copy(now_coord_all_move_and_color)
+        self.__now_coord_all_move_and_color = np.array(copy.copy(now_coord_all_move_and_color))
         self.__number_of_movies = number_of_movies
 
     def set_number_move(self):
@@ -102,7 +103,10 @@ class Game_Graphics:
         return color_player
 
     def set_coord(self, x, y, color):
-        self.__now_coord_all_move_and_color.append([x,y,color])
+        if len(self.__now_coord_all_move_and_color) == 0:
+            self.__now_coord_all_move_and_color = np.array([[x,y,color]])
+        else:
+            self.__now_coord_all_move_and_color = np.vstack((self.__now_coord_all_move_and_color, np.array([[x, y, color]])))
 
 
 
@@ -119,6 +123,11 @@ def give_coord_rect(events):
 
     return index_x_rect,index_y_rect
 
+def check_in_2D_array(check_array, check_in_array):
+    for i, sub in enumerate(check_in_array):
+        if np.array_equal(sub, check_array):
+            return True
+    return False
 
 
 
