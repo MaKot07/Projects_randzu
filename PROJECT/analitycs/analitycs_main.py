@@ -175,12 +175,12 @@ class Analitycs:
                                 if len(list_without_len_1) != 0:
                                     list_without_len_1 = np.vstack((list_without_len_1, [lines]))
                                 else:
-                                    list_without_len_1 = np.array([lines])
+                                    list_without_len_1 = [lines]
                             else:
                                 if len(list_with_len_1) != 0:
                                     list_with_len_1 = np.vstack((list_with_len_1, [lines]))
                                 else:
-                                    list_with_len_1 = np.array([lines])
+                                    list_with_len_1 = [lines]
         else:
             wh_near_chips = self.find_near_chips(coords_chip[0], coords_chip[1], color)
             for near_coords_chip in wh_near_chips:
@@ -192,12 +192,12 @@ class Analitycs:
                                 if len(list_without_len_1) != 0:
                                     list_without_len_1 = np.vstack((list_without_len_1, [lines]))
                                 else:
-                                    list_without_len_1 = np.array([lines])
+                                    list_without_len_1 = [lines]
                             else:
                                 if len(list_with_len_1) != 0:
                                     list_with_len_1 = np.vstack((list_with_len_1, [lines]))
                                 else:
-                                    list_with_len_1 = np.array([lines])
+                                    list_with_len_1 = [lines]
 
         if len(list_without_len_1) != 0 and len(list_with_len_1) != 0:
             return np.concatenate(([list_without_len_1, list_with_len_1]))
