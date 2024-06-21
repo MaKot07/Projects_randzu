@@ -128,8 +128,9 @@ class Analitycs:
             next_coord_chip = np.array([new_coord_x_chip, new_coord_y_chip])
 
         for lines in all_line:
-            if check_in_2D_array(next_coord_chip, lines) and not np.array_equal(lines, line):
-                if len(lines) != 1:
+            if check_in_2D_array(next_coord_chip, lines):
+                all_index_empty = give_index_empty(lines)
+                if len(all_index_empty) != 14:
                     check_next_line = self.check_line(coord_chip, lines)
                     if check_next_line == True:
                         for index in range(len(all_line)):
@@ -196,7 +197,8 @@ class Analitycs:
                     if check_in_2D_array(near_coords_chip, lines):
                         in_condition = self.check_line(coords_chip, lines)
                         if in_condition == True:
-                            if len(lines) == 1:
+                            all_index_empty = give_index_empty(lines)
+                            if len(all_index_empty) != 14:
                                 if len(list_without_len_1) != 0:
                                     list_without_len_1 = np.vstack((list_without_len_1, [lines]))
                                 else:
@@ -218,7 +220,6 @@ class Analitycs:
 
     def adding_lines(self, index_x_rect, index_y_rect, color_player):
         if color_player == black:
-            all_line = np.array(self.now_all_line_blackplayer)
             list_whith_lines = self.find_need_line( np.array([index_x_rect, index_y_rect]), color_player)
             delit_index_line = np.array([])
             for index_line in range(len(list_whith_lines)):
@@ -227,10 +228,10 @@ class Analitycs:
                     all_index_empty = give_index_empty(line)
                     line = np.delete(line, all_index_empty, axis=0)
                     if not (index_x_rect < line[0][0] or (index_x_rect == line[0][0] and index_y_rect < line[0][1])):
-                        check_connect_another_line, index_connect_line = self.check_connect_lines(np.array([index_x_rect, index_y_rect]), line, all_line)
+                        check_connect_another_line, index_connect_line = self.check_connect_lines(np.array([index_x_rect, index_y_rect]), line, self.now_all_line_blackplayer)
                         if check_connect_another_line == True:
-                            all_index_empty = give_index_empty(all_line[index_connect_line])
-                            new_connect_line = np.delete(all_line[index_connect_line], all_index_empty, axis=0)
+                            all_index_empty = give_index_empty(self.now_all_line_blackplayer[index_connect_line])
+                            new_connect_line = np.delete(self.now_all_line_blackplayer[index_connect_line], all_index_empty, axis=0)
 
                             new_line_without_empty = np.array(np.concatenate((line, np.array([[index_x_rect, index_y_rect]]), new_connect_line)))
                             empty_array = np.full((15 - len(new_line_without_empty), 2), -1)
@@ -239,10 +240,10 @@ class Analitycs:
 
                             delit_index_line = self.dellit_near_chips(np.array([index_x_rect, index_y_rect]),new_line_without_empty, list_whith_lines, color_player, delit_index_line)
                             if len(new_connect_line) != 1:
-                                if check_in_2D_array(all_line[index_connect_line], list_whith_lines):
-                                    index_to_del = find_index_in_2D_array(all_line[index_connect_line], list_whith_lines)
+                                if check_in_2D_array(self.now_all_line_blackplayer[index_connect_line], list_whith_lines):
+                                    index_to_del = find_index_in_2D_array(self.now_all_line_blackplayer[index_connect_line], list_whith_lines)
                                     delit_index_line = np.vstack((delit_index_line, np.array([index_to_del])))
-                                self.now_all_line_blackplayer = self.now_all_line_blackplayer[np.delete(self.now_all_line_blackplayer, index_connect_line)]
+                                self.now_all_line_blackplayer = np.delete(self.now_all_line_blackplayer, index_connect_line, axis=0)
                             if len(line) != 1:
                                 all_index_del = find_index_in_2D_array(list_whith_lines[index_line], self.now_all_line_blackplayer)
                                 self.now_all_line_blackplayer = np.delete(self.now_all_line_blackplayer, all_index_del, axis=0)
@@ -257,10 +258,10 @@ class Analitycs:
                                 all_index_del = find_index_in_2D_array(list_whith_lines[index_line], self.now_all_line_blackplayer)
                                 self.now_all_line_blackplayer = np.delete(self.now_all_line_blackplayer, all_index_del, axis=0)
                     else:
-                        check_connect_another_line, index_connect_line = self.check_connect_lines(np.array([index_x_rect, index_y_rect]), line, all_line)
+                        check_connect_another_line, index_connect_line = self.check_connect_lines(np.array([index_x_rect, index_y_rect]), line, self.now_all_line_blackplayer)
                         if check_connect_another_line == True:
-                            all_index_empty = give_index_empty(all_line[index_connect_line])
-                            new_connect_line = np.delete(all_line[index_connect_line], all_index_empty, axis=0)
+                            all_index_empty = give_index_empty(self.now_all_line_blackplayer[index_connect_line])
+                            new_connect_line = np.delete(self.now_all_line_blackplayer[index_connect_line], all_index_empty, axis=0)
 
                             new_line_without_empty = np.array(np.concatenate((new_connect_line, np.array([[index_x_rect, index_y_rect]]), line)))
                             empty_array = np.full((15 - len(new_line_without_empty), 2), -1)
@@ -269,10 +270,10 @@ class Analitycs:
 
                             delit_index_line = self.dellit_near_chips(np.array([index_x_rect, index_y_rect]),new_line_without_empty, list_whith_lines, color_player, delit_index_line)
                             if len(new_connect_line) != 1:
-                                if check_in_2D_array(all_line[index_connect_line], list_whith_lines):
-                                    index_to_del = find_index_in_2D_array(all_line[index_connect_line],list_whith_lines)
+                                if check_in_2D_array(self.now_all_line_blackplayer[index_connect_line], list_whith_lines):
+                                    index_to_del = find_index_in_2D_array(self.now_all_line_blackplayer[index_connect_line],list_whith_lines)
                                     delit_index_line = np.vstack((delit_index_line, np.array([index_to_del])))
-                                self.now_all_line_blackplayer = self.now_all_line_blackplayer[np.delete(self.now_all_line_blackplayer, index_connect_line)]
+                                self.now_all_line_blackplayer = np.delete(self.now_all_line_blackplayer, index_connect_line, axis=0)
                             if len(line) != 1:
                                 all_index_del = find_index_in_2D_array(list_whith_lines[index_line], self.now_all_line_blackplayer)
                                 self.now_all_line_blackplayer = np.delete(self.now_all_line_blackplayer, all_index_del, axis=0)
