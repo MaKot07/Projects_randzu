@@ -101,5 +101,3 @@ from numba import types, typed
 #e = np.array(v)
 #print("#@#$",e)
 
-a = np.array([1,2,3,4,5])
-print(len(np.where(a == [8])[0]))
