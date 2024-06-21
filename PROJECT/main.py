@@ -6,6 +6,13 @@ from Const import *
 import numpy as np
 
 
+def now_event():
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            return event
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            return event
 
 def main():
     now_coord_all_move_and_color = np.array([])
@@ -22,7 +29,7 @@ def main():
     run = True
     while run:
 
-        event = game_player_analityc.now_event()
+        event = now_event()
 
         if game_graphics.give_number_move() % 2 != 0 and win_color == None and False:
             MinMax = Intelect(game_player_analityc.give_all_line_blackplayer(),game_player_analityc.give_all_line_whiteplayer(), game_player_analityc.give_chips(),color_computer)
@@ -62,7 +69,7 @@ def main():
                         game_player_analityc.adding_lines(index_x_rect, index_y_rect, color_user)
 
                         print("Black", game_player_analityc.give_all_line_blackplayer())
-                        #win_color = game_player_analityc.check_colors_win()
+                        win_color = game_player_analityc.check_colors_win()
 
                     check_newgame = check_want_newgame(check_x, check_y)
                     if check_newgame == True:
