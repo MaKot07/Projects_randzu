@@ -97,14 +97,14 @@ class Intelect(Analitycs):
     def check_line_isolated(self, our_check_line, color_our_line):
         if len(our_check_line) == 1:
             if color_our_line == black:
-                near_chips = self.find_near_chips(our_check_line[0][0], our_check_line[0][1], white)
+                near_chips = self.find_near_chips(our_check_line[0][0], our_check_line[0][1], white, self.now_coord_all_move_and_color)
                 for new_coord_x, new_coord_y in near_chips:
                     check_coord_new = self.check_motion_for_pose_score(new_coord_x, new_coord_y)
                     if check_coord_new == True:
                         return 1
                 return 0
             else:
-                near_chips = self.find_near_chips(our_check_line[0][0], our_check_line[0][1], black)
+                near_chips = self.find_near_chips(our_check_line[0][0], our_check_line[0][1], black, self.now_coord_all_move_and_color)
                 for new_coord_x, new_coord_y in near_chips:
                     check_coord_new = self.check_motion_for_pose_score(new_coord_x, new_coord_y)
                     if check_coord_new == True:
