@@ -23,7 +23,7 @@ from numba.experimental import jitclass
 from typing import List
 from numba.typed import List as NumbaList
 from numba import typed, typeof
-from numba import int32, float32, int64, int8
+
 import numpy as np
 from numba import njit,jit
 from numba import types, typed
@@ -100,5 +100,4 @@ from numba import types, typed
 #rint(np.stack((r, k, v)))
 #e = np.array(v)
 #print("#@#$",e)
-
 

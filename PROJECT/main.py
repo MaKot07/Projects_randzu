@@ -6,6 +6,7 @@ from Const import *
 import numpy as np
 
 
+
 def now_event():
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -15,7 +16,7 @@ def now_event():
             return event
 
 def main():
-    now_coord_all_move_and_color = np.array([])
+    now_coord_all_move_and_color = np.array([[]], dtype=np.int8)
     win_color = None
     color_user = black
     color_computer = white

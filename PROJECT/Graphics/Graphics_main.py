@@ -15,7 +15,7 @@ class Game_Graphics:
     __board_shift = 30
 
     def __init__(self, now_coord_all_move_and_color, number_of_movies):
-        self.__now_coord_all_move_and_color = np.array(copy.copy(now_coord_all_move_and_color))
+        self.__now_coord_all_move_and_color = copy.copy(now_coord_all_move_and_color)
         self.__number_of_movies = number_of_movies
 
     def set_number_move(self):
@@ -28,7 +28,8 @@ class Game_Graphics:
     def draw_all_game(self, win_color):
         self.draw_screen()
         self.draw_main_board()
-        self.draw_all_shashky()
+        if self.__now_coord_all_move_and_color.size > 0:
+            self.draw_all_shashky()
         self.text_output_number_of_movies()
         if win_color != None:
             self.text_win(win_color)
@@ -60,7 +61,6 @@ class Game_Graphics:
                 text2 = f1.render('1', 1, BLACK)
                 screen.blit(text2, (5, (y + 1) * Game_Graphics.__cell_size_ramka + 20))
 
-    #@staticmethod
     def draw_all_shashky(self):
         for index_x_rect, index_y_rect, color_player in self.__now_coord_all_move_and_color:
             if color_player == black:
@@ -103,7 +103,7 @@ class Game_Graphics:
         return color_player
 
     def set_coord(self, x, y, color):
-        if len(self.__now_coord_all_move_and_color) == 0:
+        if self.__now_coord_all_move_and_color.size == 0:
             self.__now_coord_all_move_and_color = np.array([[x,y,color]])
         else:
             self.__now_coord_all_move_and_color = np.vstack((self.__now_coord_all_move_and_color, np.array([[x, y, color]])))
