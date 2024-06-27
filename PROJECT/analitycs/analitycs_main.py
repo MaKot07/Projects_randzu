@@ -1,18 +1,27 @@
-from Const import *
 import numpy as np
 import copy
 from numba import njit, jit, config
-import traceback
+from numba.typed import List
+from typing import List
+from numba import typed, typeof
+
+
+
+black = 0
+white = 1
+cell_qty = 14
+cell_size = 40
+cell_size_ramka = 42
+
 
 class Analitycs:
-
     cell_qty = 14
 
-    def __init__(self, now_coord_all_move_and_color, color):
+    def __init__(self, color):
         self.color = copy.copy(color)
-        self.now_coord_all_move_and_color = copy.copy(now_coord_all_move_and_color)
-        self.now_all_line_blackplayer = np.array([], dtype=np.int8)
-        self.now_all_line_whiteplayer = np.array([], dtype=np.int8)
+        self.now_coord_all_move_and_color = np.empty((0,3), dtype=np.int8)
+        self.now_all_line_blackplayer = np.empty((0,9,2), dtype=np.int8)
+        self.now_all_line_whiteplayer = np.empty((0,9,2), dtype=np.int8)
 
     def set_coord(self, x, y, color):
         new_arr = np.array([[x,y, color]], dtype=np.int8)
@@ -22,16 +31,16 @@ class Analitycs:
             self.now_coord_all_move_and_color = np.vstack((self.now_coord_all_move_and_color, new_arr))
 
     def give_all_line_blackplayer(self):
-        return self.now_all_line_blackplayer
+        return np.copy(self.now_all_line_blackplayer)
 
     def give_all_line_whiteplayer(self):
-        return self.now_all_line_whiteplayer
+        return np.copy(self.now_all_line_whiteplayer)
 
     def give_color(self):
         return self.color
 
     def give_chips(self):
-        return self.now_coord_all_move_and_color
+        return np.copy(self.now_coord_all_move_and_color)
 
     def check_condition_win(self, need_color):
         if need_color == black:
@@ -59,60 +68,13 @@ class Analitycs:
         return None
 
     def adding_lines(self, index_x_rect, index_y_rect, color_player):
-        array_with_coord = np.array([index_x_rect, index_y_rect], dtype=np.int8)
-        player_lines = self.now_all_line_blackplayer if color_player == black else self.now_all_line_whiteplayer
-
-        delit_index_line = []
-        passed_index_line = []
-
-        new_line_template = np.full((15, 2), -1)
-
-        near_chips, have_near_chips = find_near_chips(array_with_coord[0], array_with_coord[1], color_player,self.now_coord_all_move_and_color)
-        if have_near_chips:
-            if color_player == black:
-                list_whith_lines = find_need_line(array_with_coord, self.now_all_line_blackplayer, near_chips)
-            else:
-                list_whith_lines = find_need_line(array_with_coord, self.now_all_line_whiteplayer, near_chips)
-        else:
-            list_whith_lines = np.array([])
-
-        if player_lines.size != 0:
-            new_line_template[0] = array_with_coord
-            player_lines = np.vstack((player_lines, np.array([new_line_template], dtype=np.int8)))
-            new_line_template[0] = np.array([-1,-1], dtype=np.int8)
+        if self.color == black:
+            self.now_all_line_blackplayer = adding_lines(index_x_rect, index_y_rect, color_player, self.now_all_line_blackplayer, self.now_coord_all_move_and_color)
 
         else:
-            new_line_template[0] = array_with_coord
-            player_lines = np.array([new_line_template], dtype=np.int8)
+            self.now_all_line_whiteplayer = adding_lines(index_x_rect, index_y_rect, color_player, self.now_all_line_whiteplayer, self.now_coord_all_move_and_color)
 
-        for index_line, line in enumerate(list_whith_lines):
-            if index_line not in passed_index_line:
-                all_index_empty = give_index_empty(line)
-                line_without_empty = np.delete(line, all_index_empty, axis=0)
-                check_connect_another_line, index_connect_line = check_connect_lines(array_with_coord, line_without_empty, player_lines)
 
-                if check_connect_another_line:
-                    new_connect_line = create_line_with_connect(array_with_coord, line_without_empty, player_lines[index_connect_line])
-                    new_line = create_new_line(new_connect_line, copy.copy(new_line_template))
-                    player_lines = np.vstack((player_lines, np.array([new_line], dtype=np.int8)))
-                    passed_index_line.extend(dellit_near_chips(array_with_coord, new_line, player_lines[index_connect_line], list_whith_lines))
-                    if give_len_line(player_lines[index_connect_line]) != 1:
-                        delit_index_line.append(index_connect_line)
-                else:
-                    new_connect_line = create_line_without_connect(array_with_coord, line_without_empty)
-                    new_line = create_new_line(new_connect_line, copy.copy(new_line_template))
-                    player_lines = np.vstack((player_lines, np.array([new_line], dtype=np.int8)))
-                    passed_index_line.extend(dellit_near_chips_without_connect(array_with_coord, new_line, list_whith_lines))
-
-                if len(line_without_empty) != 1:
-                    delit_index_line.append(find_index_in_2D_array(list_whith_lines[index_line], player_lines))
-
-        if color_player == black:
-            player_lines = np.delete(player_lines, delit_index_line, axis=0)
-            self.now_all_line_blackplayer = player_lines
-        else:
-            player_lines = np.delete(player_lines, delit_index_line, axis=0)
-            self.now_all_line_whiteplayer = player_lines
 
 
     def check_motion(self, x, y):
@@ -124,14 +86,6 @@ class Analitycs:
                 return True
         return False
 
-    def check_motion_for_generator(self, x, y):
-
-        if x <= cell_qty and x >= 0 and y <= cell_qty and y >= 0:
-            if not check_in_2D_array(np.array([x, y, white], dtype=np.int8), self.now_coord_all_move_and_color) and not check_in_2D_array(np.array([x, y, black], dtype=np.int8), self.now_coord_all_move_and_color):
-                return True
-
-        return False
-
     def check_motion_for_pose_score(self, x_rect, y_rect):
 
         if x_rect <= cell_qty and x_rect >= 0 and y_rect <= cell_qty and y_rect >= 0:
@@ -139,6 +93,65 @@ class Analitycs:
                 return True
 
         return False
+
+
+@njit(cache=True)
+def adding_lines(index_x_rect, index_y_rect, color_player, player_lines_array, now_coord_all_move_and_color):
+    array_with_coord = np.array([index_x_rect, index_y_rect], dtype=np.int8)
+    player_lines = in_list_all_lines(player_lines_array)
+
+    delit_index_line = []
+    passed_index_line = []
+
+
+    new_line_template = np.full((9, 2), -1, dtype=np.int8)
+
+
+    near_chips, have_near_chips = find_near_chips(array_with_coord[0], array_with_coord[1], color_player, now_coord_all_move_and_color)
+
+    list_whith_lines = find_need_line(array_with_coord, player_lines_array, near_chips)
+
+    if player_lines:
+        new_line_template[0] = array_with_coord
+        copy_new_line_template = new_line_template.copy()
+        player_lines.append(copy_new_line_template)
+        new_line_template[0] = np.array([-1, -1], dtype=np.int8)
+
+    else:
+        new_line_template[0] = array_with_coord
+        copy_new_line_template = new_line_template.copy()
+        player_lines.append(copy_new_line_template)
+
+    for index_line, line in enumerate(list_whith_lines):
+        if index_line not in passed_index_line:
+            all_index_empty = give_index_empty(line)
+            line_without_empty = delete_by_index(line, all_index_empty)
+            check_connect_another_line, index_connect_line = check_connect_lines(array_with_coord,line_without_empty, player_lines)
+
+            if check_connect_another_line:
+                new_connect_line = create_line_with_connect(array_with_coord, line_without_empty,player_lines[index_connect_line])
+                new_line = create_new_line(new_connect_line)
+                player_lines.append(new_line)
+                passed_index_line.extend(dellit_near_chips(array_with_coord, new_line, player_lines[index_connect_line], list_whith_lines))
+                if give_len_line(player_lines[index_connect_line]) != 1:
+                    delit_index_line.append(index_connect_line)
+            else:
+                new_connect_line = create_line_without_connect(array_with_coord, line_without_empty)
+                new_line = create_new_line(new_connect_line)
+                player_lines.append(new_line)
+                passed_index_line.extend(
+                    dellit_near_chips_without_connect(array_with_coord, new_line, list_whith_lines))
+
+            if len(line_without_empty) != 1:
+                delit_index_line.append(find_index_in_2D_array(list_whith_lines[index_line], player_lines))
+
+    array_player_lines = list_in_array(player_lines)
+    if delit_index_line:
+        return delete_by_index(array_player_lines, delit_index_line)
+    else:
+        return array_player_lines
+
+
 
 
 @njit(cache=True)
@@ -155,14 +168,15 @@ def find_near_chips(x, y, need_color, coord_all_move_and_color):
             if check_in_2D_array( chip, coord_all_move_and_color):
                 near_chips.append([chip[0], chip[1]])
     if len(near_chips) == 0:
-        return np.array([[-1,-1,-1]], dtype=np.int8), False
+        return np.empty( (0,2), dtype=np.int8), False
 
     return np.array(near_chips, dtype=np.int8), True
 
-
+@njit(cache=True)
 def find_need_line(coords_chip, now_all_line_player, near_chips):
     list_without_len_1 = []
     list_with_len_1 = []
+    result_list = typed.List()
 
     for near_coords_chip in near_chips:
         for lines in now_all_line_player:
@@ -175,17 +189,21 @@ def find_need_line(coords_chip, now_all_line_player, near_chips):
                     else:
                         list_with_len_1.append(lines)
 
-    array_without_len_1 = np.array(list_without_len_1, dtype=np.int8)
-    array_with_len_1 = np.array(list_with_len_1, dtype=np.int8)
 
-    if array_without_len_1.size and array_with_len_1.size:
-        return np.vstack((array_without_len_1, array_with_len_1))
-    elif array_with_len_1.size == 0 and array_without_len_1.size > 0:
-        return array_without_len_1
-    elif array_without_len_1.size == 0 and array_with_len_1.size > 0:
-        return array_with_len_1
-    else:
-        return np.array([], dtype=np.int8)
+    if len(list_with_len_1) > 0 and len(list_without_len_1) == 0:
+        for arr in list_with_len_1:
+            result_list.append(arr)
+        return result_list
+    elif len(list_without_len_1) > 0 and len(list_with_len_1) == 0:
+        for arr in list_without_len_1:
+            result_list.append(arr)
+        return result_list
+
+    for arr in list_without_len_1:
+        result_list.append(arr)
+    for arr in list_with_len_1:
+        result_list.append(arr)
+    return result_list
 
 @njit(cache=True)
 def check_connect_lines(coord_chip, line_without_empty, all_line):
@@ -229,16 +247,17 @@ def dellit_near_chips(coords_chip, new_line, connect_line, list_whith_lines):
 @njit(cache=True)
 def dellit_near_chips_without_connect(coords_chip, new_line, list_whith_lines):
     index_to_del = []
+    arr_empty = np.array([-1, -1], dtype=np.int8)
     if (coords_chip == new_line[0]).all():
         for j, arr_with_lines in enumerate(list_whith_lines):
-            if (new_line[1] == arr_with_lines).all():
+            if (new_line[1] == arr_with_lines[0]).all() and (arr_empty == arr_with_lines[1]).all():
                 index_to_del = [j]
                 return index_to_del
 
     for i, arr in enumerate(new_line):
         if (coords_chip == arr).all():
             for j, arr_with_lines in enumerate(list_whith_lines):
-                if (new_line[i - 1] == arr_with_lines[0]).all():
+                if (new_line[i - 1] == arr_with_lines[0]).all() and (arr_empty == arr_with_lines[1]).all():
                     index_to_del.append(j)
                     break
             break
@@ -258,8 +277,10 @@ def create_line_with_connect(chip_coord, line, connect_line):
         new_line_without_empty = np.concatenate((line, chip_coord_2d, new_connect_line))
         return new_line_without_empty
 
+@njit(cache=True)
 def create_line_without_connect(chip_coord, line):
-    chip_coord_2d = np.array([chip_coord], dtype=np.int8)
+    chip_coord = np.asarray(chip_coord, dtype=np.int8)
+    chip_coord_2d = np.expand_dims(chip_coord, axis=0)
 
     if chip_coord[0] < line[0][0] or (chip_coord[0] == line[0][0] and chip_coord[1] < line[0][1]):
         new_line_without_empty = np.concatenate((chip_coord_2d, line), axis=0)
@@ -269,7 +290,8 @@ def create_line_without_connect(chip_coord, line):
         return new_line_without_empty
 
 @njit(cache=True)
-def create_new_line(new_line_without_empty, new_line_with_empty):
+def create_new_line(new_line_without_empty):
+    new_line_with_empty = np.full((9, 2), -1, dtype=np.int8)
     for i, arr in enumerate(new_line_without_empty):
         new_line_with_empty[i] = arr
     return new_line_with_empty
@@ -319,22 +341,6 @@ def give_index_empty_in_mask(array_with_empty):
         mask[i] = np.all(array_with_empty[i] == empty)
 
     return mask
-
-
-@njit(cache=True)
-def find_near_chips_njit(x, y, need_color, now_coord_all_move_and_color):
-    near_chips = np.empty((0, 2), dtype=np.int64)
-
-    for i in range(-1, 2):
-        for j in range(-1, 2):
-            if i == 0 and j == 0:
-                continue
-            new_x = x + i
-            new_y = y + j
-            if check_in_2D_array(np.array([new_x, new_y, need_color], dtype=np.int8), now_coord_all_move_and_color):
-                near_chips = np.vstack((near_chips, np.array([[new_x, new_y]], dtype=np.int8)))
-
-    return near_chips
 
 @njit(cache=True)
 def check_line(coord_chip, our_line):
@@ -389,4 +395,43 @@ def check_win_njit(all_line):
             return True
     return False
 
+@njit(cache=True)
+def check_motion_for_brain(x, y, now_coord_all_move_and_color):
+
+    if x <= cell_qty and x >= 0 and y <= cell_qty and y >= 0:
+        if not check_in_2D_array(np.array([x, y, white], dtype=np.int8), now_coord_all_move_and_color) and not check_in_2D_array(np.array([x, y, black], dtype=np.int8), now_coord_all_move_and_color):
+            return True
+
+    return False
+
+@njit(cache=True)
+def in_list_all_lines(all_lines):
+    result_list = []
+    for arr in all_lines:
+        result_list.append(arr)
+    return result_list
+
+@njit(cache=True)
+def delete_by_index(arr, indices_to_delete):
+
+    mask = np.ones(arr.shape[0], dtype=np.bool_)
+    for i in indices_to_delete:
+        mask[i] = False
+    return arr[mask]
+
+@njit(cache=True)
+def list_in_array(list_arrays):
+    result_array = np.full((len(list_arrays), 9, 2), -1, dtype=np.int8)
+
+    for i, arr in enumerate(list_arrays):
+        result_array[i] = arr
+
+    return  result_array
+
+@njit(cache=True)
+def copy_array(array):
+    copy_arr = np.empty_like(array)
+    for i,arr in enumerate(array):
+        copy_arr[i] = np.copy(arr)
+    return copy_arr
 

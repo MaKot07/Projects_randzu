@@ -16,25 +16,29 @@ def now_event():
             return event
 
 def main():
-    now_coord_all_move_and_color = np.array([[]], dtype=np.int8)
     win_color = None
     color_user = black
     color_computer = white
     number_of_movies = 0
+    index_x_rect, index_y_rect = 7, 7
+    last_sgen_motion = [np.empty((0), dtype=np.int8)]
 
-    game_graphics = Game_Graphics(now_coord_all_move_and_color, number_of_movies)
+    game_graphics = Game_Graphics(number_of_movies)
     game_graphics.draw_all_game(win_color)
 
-    game_player_analityc = Analitycs(now_coord_all_move_and_color, color_user)
+    game_player_analityc = Analitycs(color_user)
 
     run = True
     while run:
 
         event = now_event()
 
-        if game_graphics.give_number_move() % 2 != 0 and win_color == None and False:
-            MinMax = Intelect(game_player_analityc.give_all_line_blackplayer(),game_player_analityc.give_all_line_whiteplayer(), game_player_analityc.give_chips(),color_computer)
-            best_value, coord_best_move = MinMax.minimax(3, True, float('-inf'), float('inf'))
+        if game_graphics.give_number_move() % 2 != 0 and win_color == None:
+            Board_MinMax = Board(game_player_analityc.give_all_line_blackplayer(), game_player_analityc.give_all_line_whiteplayer(), game_player_analityc.give_chips(), color_computer)
+            last_sgen_motion = generator_motion( np.array((index_x_rect, index_y_rect)), last_sgen_motion, game_player_analityc.give_chips())
+            next_variants_move_and_motion = ( np.array((index_x_rect, index_y_rect)), last_sgen_motion )
+            best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 5, next_variants_move_and_motion, True, float('-inf'), float('inf'), 0)
+            print("#@%", count_all_variants)
 
             game_graphics.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
             game_player_analityc.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
@@ -45,11 +49,7 @@ def main():
 
             win_color = game_player_analityc.check_colors_win()
 
-            del MinMax
 
-            now_pose_score = Intelect(game_player_analityc.give_all_line_blackplayer(),game_player_analityc.now_all_line_whiteplayer,game_player_analityc.now_coord_all_move_and_color, game_player_analityc.color)
-            print("Score ", now_pose_score.find_position_score())
-            del now_pose_score
 
         else:
             if event != None:

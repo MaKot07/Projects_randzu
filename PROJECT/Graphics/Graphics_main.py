@@ -5,6 +5,19 @@ import copy
 import numpy as np
 #from numba import jit
 
+black = 0
+white = 1
+cell_qty = 14
+cell_size = 40
+cell_size_ramka = 42
+colors = (234, 237, 204)
+board_shift = 30
+WHITE = (255, 255, 255)
+RED = (225, 0, 50)
+GREEN = (0, 225, 0)
+BLUE = (0, 0, 225)
+BLACK = (10, 10, 10)
+GRAY = (92, 87, 87)
 
 class Game_Graphics:
 
@@ -14,8 +27,9 @@ class Game_Graphics:
     __colors = (234, 237, 204)
     __board_shift = 30
 
-    def __init__(self, now_coord_all_move_and_color, number_of_movies):
-        self.__now_coord_all_move_and_color = copy.copy(now_coord_all_move_and_color)
+
+    def __init__(self, number_of_movies):
+        self.__now_coord_all_move_and_color = np.empty(0, dtype=np.int8)
         self.__number_of_movies = number_of_movies
 
     def set_number_move(self):
