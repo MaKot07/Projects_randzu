@@ -45,7 +45,7 @@ class Game_Graphics:
         if self.__now_coord_all_move_and_color.size > 0:
             self.draw_all_shashky()
         self.text_output_number_of_movies()
-        if win_color != None:
+        if win_color != -1:
             self.text_win(win_color)
         self.draw_button_newgame()
 

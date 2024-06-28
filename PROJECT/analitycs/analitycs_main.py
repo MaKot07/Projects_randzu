@@ -14,86 +14,6 @@ cell_size = 40
 cell_size_ramka = 42
 
 
-class Analitycs:
-    cell_qty = 14
-
-    def __init__(self, color):
-        self.color = copy.copy(color)
-        self.now_coord_all_move_and_color = np.empty((0,3), dtype=np.int8)
-        self.now_all_line_blackplayer = np.empty((0,9,2), dtype=np.int8)
-        self.now_all_line_whiteplayer = np.empty((0,9,2), dtype=np.int8)
-
-    def set_coord(self, x, y, color):
-        new_arr = np.array([[x,y, color]], dtype=np.int8)
-        if self.now_coord_all_move_and_color.size == 0:
-            self.now_coord_all_move_and_color = new_arr
-        else:
-            self.now_coord_all_move_and_color = np.vstack((self.now_coord_all_move_and_color, new_arr))
-
-    def give_all_line_blackplayer(self):
-        return np.copy(self.now_all_line_blackplayer)
-
-    def give_all_line_whiteplayer(self):
-        return np.copy(self.now_all_line_whiteplayer)
-
-    def give_color(self):
-        return self.color
-
-    def give_chips(self):
-        return np.copy(self.now_coord_all_move_and_color)
-
-    def check_condition_win(self, need_color):
-        if need_color == black:
-            all_line = self.now_all_line_blackplayer
-        else:
-            all_line = self.now_all_line_whiteplayer
-
-        if check_draw_njit(cell_qty, self.now_coord_all_move_and_color):
-            return None
-
-        if all_line.size == 0:
-            return False
-
-        return check_win_njit(all_line)
-
-    def check_colors_win(self):
-        check_win_white = self.check_condition_win(white)
-        check_win_black = self.check_condition_win(black)
-
-        if check_win_white:
-            return white
-        if check_win_black:
-            return black
-
-        return None
-
-    def adding_lines(self, index_x_rect, index_y_rect, color_player):
-        if self.color == black:
-            self.now_all_line_blackplayer = adding_lines(index_x_rect, index_y_rect, color_player, self.now_all_line_blackplayer, self.now_coord_all_move_and_color)
-
-        else:
-            self.now_all_line_whiteplayer = adding_lines(index_x_rect, index_y_rect, color_player, self.now_all_line_whiteplayer, self.now_coord_all_move_and_color)
-
-
-
-
-    def check_motion(self, x, y):
-        x_rect = np.round(x / cell_size_ramka)
-        y_rect = np.round(y / cell_size_ramka)
-
-        if x <= (cell_qty * cell_size_ramka) and x >= 0 and y <= (cell_qty * cell_size_ramka) and y >= 0:
-            if not check_in_2D_array(np.array([x_rect, y_rect, white], dtype=np.int8), self.now_coord_all_move_and_color) and not check_in_2D_array(np.array([x_rect, y_rect, black], dtype=np.int8), self.now_coord_all_move_and_color):
-                return True
-        return False
-
-    def check_motion_for_pose_score(self, x_rect, y_rect):
-
-        if x_rect <= cell_qty and x_rect >= 0 and y_rect <= cell_qty and y_rect >= 0:
-            if not check_in_2D_array(np.array([x_rect, y_rect, white], dtype=np.int8), self.now_coord_all_move_and_color) and not check_in_2D_array(np.array([x_rect, y_rect, black], dtype=np.int8), self.now_coord_all_move_and_color):
-                return True
-
-        return False
-
 
 @njit(cache=True)
 def adding_lines(index_x_rect, index_y_rect, color_player, player_lines_array, now_coord_all_move_and_color):
@@ -315,6 +235,15 @@ def check_in_2D_array(check_array, check_in_array):
             return True
     return False
 
+@njit(cache=True)
+def check_in_2D_list(check_array, check_in_list):
+    if not check_in_list:
+        return False
+    for sub in check_in_list:
+        if (sub == check_array).all():
+            return True
+    return False
+
 
 
 @njit(cache=True)
@@ -435,3 +364,11 @@ def copy_array(array):
         copy_arr[i] = np.copy(arr)
     return copy_arr
 
+
+@njit
+def remove_element_by_index(lst, idx):
+    return [lst[i] for i in range(len(lst)) if i != idx]
+
+@njit
+def remove_element_from_list(lst, val):
+    return [x for x in lst if not np.array_equal(x, val)]

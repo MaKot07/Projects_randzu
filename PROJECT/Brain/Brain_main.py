@@ -18,7 +18,7 @@ spec = [
 @jitclass(spec)
 class Board:
 
-    def __init__(self, now_all_line_blackplayer, now_all_line_whiteplayer, now_coord_all_move_and_color, color):
+    def __init__(self, color, now_all_line_blackplayer=np.empty((0,9,2), dtype=np.int8), now_all_line_whiteplayer=np.empty((0,9,2), dtype=np.int8), now_coord_all_move_and_color=np.empty((0,3), dtype=np.int8)):
         self.now_coord_all_move_and_color = now_coord_all_move_and_color
         self.now_all_line_blackplayer = now_all_line_blackplayer
         self.now_all_line_whiteplayer = now_all_line_whiteplayer
@@ -26,6 +26,42 @@ class Board:
         self.cell_qty = 14
         self.black = np.int8(0)
         self.white = np.int8(1)
+
+
+    def set_coord(self, x, y, color):
+        new_arr = np.array([[x,y, color]], dtype=np.int8)
+        if self.now_coord_all_move_and_color.size == 0:
+            self.now_coord_all_move_and_color = new_arr
+        else:
+            self.now_coord_all_move_and_color = np.vstack((self.now_coord_all_move_and_color, new_arr))
+
+    def give_all_line_blackplayer(self):
+        return np.copy(self.now_all_line_blackplayer)
+
+    def give_all_line_whiteplayer(self):
+        return np.copy(self.now_all_line_whiteplayer)
+
+    def give_color(self):
+        return self.color
+
+    def give_chips(self):
+        return np.copy(self.now_coord_all_move_and_color)
+
+    def adding_lines(self, index_x_rect, index_y_rect, color_player):
+        if self.color == black:
+            self.now_all_line_blackplayer = adding_lines(index_x_rect, index_y_rect, color_player, self.now_all_line_blackplayer, self.now_coord_all_move_and_color)
+        else:
+            self.now_all_line_whiteplayer = adding_lines(index_x_rect, index_y_rect, color_player, self.now_all_line_whiteplayer, self.now_coord_all_move_and_color)
+
+
+    def check_motion(self, x, y):
+        x_rect = np.round(x / cell_size_ramka)
+        y_rect = np.round(y / cell_size_ramka)
+
+        if x <= (cell_qty * cell_size_ramka) and x >= 0 and y <= (cell_qty * cell_size_ramka) and y >= 0:
+            if not check_in_2D_array(np.array([x_rect, y_rect, white], dtype=np.int8), self.now_coord_all_move_and_color) and not check_in_2D_array(np.array([x_rect, y_rect, black], dtype=np.int8), self.now_coord_all_move_and_color):
+                return True
+        return False
 
 
     def check_condition_win(self, need_color):
@@ -75,13 +111,13 @@ class Board:
             new_all_line_whiteplayer = adding_lines(new_move[0], new_move[1], self.color, self.now_all_line_whiteplayer, self.now_coord_all_move_and_color)
             new_all_line_blackplayer = np.copy(self.now_all_line_blackplayer)
 
-        createn_new_state = Board(new_all_line_blackplayer, new_all_line_whiteplayer, new_coord_all_move_and_color, color_new_player)
+        createn_new_state = Board(color_new_player, new_all_line_blackplayer, new_all_line_whiteplayer, new_coord_all_move_and_color)
 
         return createn_new_state
 
 
 
-
+@njit(cache=True)
 def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPlayer, alpha=float('-inf'), beta=float('inf'), count_variants=0):
 
     if board_condition.check_colors_win() != -1:
@@ -101,7 +137,7 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
 
             count_variants += 1
             #print("#@%", count_variants)
-            next_variants_move_and_motion = (move, last_variants_move_and_motion[1])
+            next_variants_move_and_motion = (move, possible_moves)
             tmp, _, count_variants = minimax(child, depth - 1, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
 
             if tmp > value:
@@ -121,7 +157,7 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
 
             count_variants += 1
             #print("#@%", count_variants)
-            next_variants_move_and_motion = (move, last_variants_move_and_motion[1])
+            next_variants_move_and_motion = (move, possible_moves)
             tmp, _, count_variants = minimax(child, depth - 1, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
 
             if tmp < value:
@@ -145,6 +181,12 @@ def generator_motion(new_coord_motion, last_variants_motion, now_coord_all_move_
             if check_new_motion:
                 new_chip = np.array([x_coord, y_coord], dtype=np.int8)
                 sgen_motion.append(new_chip)
+
+    if last_variants_motion[0].size == 0:
+        return sgen_motion
+
+    if check_in_2D_list(new_coord_motion, last_variants_motion):
+        last_variants_motion = remove_element_from_list(last_variants_motion, new_coord_motion)
 
     sgen_motion.extend(last_variants_motion)
     return sgen_motion
@@ -176,45 +218,45 @@ def find_position_score(now_all_line_blackplayer, now_all_line_whiteplayer, now_
     for line in now_all_line_whiteplayer:
         check_isolated = check_line_isolated(line, now_coord_all_move_and_color)
         if check_isolated == 0:
-            if len(line) == 4:
+            if give_len_line(line) == 4:
                 pos_score += 17500
-            if len(line) == 3:
+            if give_len_line(line) == 3:
                 pos_score += 3000
-            if len(line) == 2:
+            if give_len_line(line) == 2:
                 pos_score += 140
-            if len(line) == 1:
+            if give_len_line(line) == 1:
                 pos_score += 5
 
         if check_isolated == 1:
-            if len(line) == 4:
+            if give_len_line(line) == 4:
                 pos_score += 9500
-            if len(line) == 3:
+            if give_len_line(line) == 3:
                 pos_score += 560
-            if len(line) == 2:
+            if give_len_line(line) == 2:
                 pos_score += 60
-            if len(line) == 1:
+            if give_len_line(line) == 1:
                 pos_score += 10
 
     for line in now_all_line_blackplayer:
         check_isolated = check_line_isolated(line, now_coord_all_move_and_color)
         if check_isolated == 0:
-            if len(line) == 4:
+            if give_len_line(line) == 4:
                 pos_score -= 17500
-            if len(line) == 3:
+            if give_len_line(line) == 3:
                 pos_score -= 3000
-            if len(line) == 2:
+            if give_len_line(line) == 2:
                 pos_score -= 140
-            if len(line) == 1:
+            if give_len_line(line) == 1:
                 pos_score -= 5
 
         if check_isolated == 1:
-            if len(line) == 4:
+            if give_len_line(line) == 4:
                 pos_score -= 9500
-            if len(line) == 3:
+            if give_len_line(line) == 3:
                 pos_score -= 560
-            if len(line) == 2:
+            if give_len_line(line) == 2:
                 pos_score -= 60
-            if len(line) == 1:
+            if give_len_line(line) == 1:
                 pos_score -= 10
     return pos_score
 
