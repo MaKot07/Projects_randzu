@@ -19,9 +19,9 @@ spec = [
 class Board:
 
     def __init__(self, color, now_all_line_blackplayer=np.empty((0,9,2), dtype=np.int8), now_all_line_whiteplayer=np.empty((0,9,2), dtype=np.int8), now_coord_all_move_and_color=np.empty((0,3), dtype=np.int8)):
-        self.now_coord_all_move_and_color = now_coord_all_move_and_color
-        self.now_all_line_blackplayer = now_all_line_blackplayer
-        self.now_all_line_whiteplayer = now_all_line_whiteplayer
+        self.now_coord_all_move_and_color = np.copy(now_coord_all_move_and_color)
+        self.now_all_line_blackplayer = np.copy(now_all_line_blackplayer)
+        self.now_all_line_whiteplayer = np.copy(now_all_line_whiteplayer)
         self.color = color
         self.cell_qty = 14
         self.black = np.int8(0)
@@ -48,7 +48,7 @@ class Board:
         return np.copy(self.now_coord_all_move_and_color)
 
     def adding_lines(self, index_x_rect, index_y_rect, color_player):
-        if self.color == black:
+        if color_player == black:
             self.now_all_line_blackplayer = adding_lines(index_x_rect, index_y_rect, color_player, self.now_all_line_blackplayer, self.now_coord_all_move_and_color)
         else:
             self.now_all_line_whiteplayer = adding_lines(index_x_rect, index_y_rect, color_player, self.now_all_line_whiteplayer, self.now_coord_all_move_and_color)
@@ -151,7 +151,7 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
 
 
             count_variants += 1
-            print("#@%", count_variants)
+            #print("#@%", count_variants)
             next_variants_move_and_motion = (move, possible_moves)
             tmp, _, count_variants = minimax(child, depth - 1, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
 
@@ -182,7 +182,7 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
             # count_average += 1
 
             count_variants += 1
-            print("#@%", count_variants)
+            #print("#@%", count_variants)
             next_variants_move_and_motion = (move, possible_moves)
             tmp, _, count_variants = minimax(child, depth - 1, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
 
@@ -204,7 +204,7 @@ def generator_motion(new_coord_motion, last_variants_motion, now_coord_all_move_
     for x_coord in range(new_coord_motion[0] - 1, new_coord_motion[0] + 2):
         for y_coord in range(new_coord_motion[1] - 1, new_coord_motion[1] + 2):
             check_new_motion = check_motion_for_brain(x_coord, y_coord, now_coord_all_move_and_color)
-            if check_new_motion:
+            if check_new_motion and check_not_in_2D_list(np.array([x_coord, y_coord], dtype=np.int8), last_variants_motion):
                 new_chip = np.array([x_coord, y_coord], dtype=np.int8)
                 sgen_motion.append(new_chip)
 

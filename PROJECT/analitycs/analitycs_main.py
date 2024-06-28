@@ -237,12 +237,21 @@ def check_in_2D_array(check_array, check_in_array):
 
 @njit(cache=True)
 def check_in_2D_list(check_array, check_in_list):
-    if not check_in_list:
+    if check_in_list[0].size == 0:
         return False
     for sub in check_in_list:
         if (sub == check_array).all():
             return True
     return False
+
+@njit(cache=True)
+def check_not_in_2D_list(check_array, check_in_list):
+    if check_in_list[0].size == 0:
+        return True
+    for sub in check_in_list:
+        if (sub == check_array).all():
+            return False
+    return True
 
 
 
