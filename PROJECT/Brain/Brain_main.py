@@ -159,7 +159,7 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
                 value = tmp
                 best_movement = move
 
-            if value >= beta:
+            if value > beta:
                 break
             alpha = max(alpha, value)
 
@@ -190,7 +190,7 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
                 value = tmp
                 best_movement = move
 
-            if value <= alpha:
+            if value < alpha:
                 break
             beta = min(beta, value)
 

@@ -4,6 +4,7 @@ from analitycs.analitycs_main import *
 from Brain.Brain_main import *
 from Const import *
 import numpy as np
+import time
 
 
 
@@ -39,7 +40,7 @@ def main():
             next_variants_move_and_motion = ( np.array((index_x_rect, index_y_rect)), last_sgen_motion )
 
             best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 4, next_variants_move_and_motion, True, float('-inf'), float('inf'), 0)
-            print("$@!$@!", best_value)
+
 
             game_graphics.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
             board_player.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
@@ -72,7 +73,7 @@ def main():
                         game_graphics.set_number_move()
                         board_player.adding_lines(index_x_rect, index_y_rect, color_user)
 
-                        print("Black", board_player.give_all_line_blackplayer())
+                        #print("Black", board_player.give_all_line_blackplayer())
                         win_color = board_player.check_colors_win()
 
                     check_newgame = check_want_newgame(check_x, check_y)
@@ -92,3 +93,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
