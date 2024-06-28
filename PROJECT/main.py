@@ -38,7 +38,7 @@ def main():
             last_sgen_motion = generator_motion( np.array( [index_x_rect, index_y_rect]), last_sgen_motion, board_player.give_chips())
             next_variants_move_and_motion = ( np.array((index_x_rect, index_y_rect)), last_sgen_motion )
 
-            best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 4, next_variants_move_and_motion, True, float('-inf'), float('inf'), 0)
+            best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 3, next_variants_move_and_motion, True, float('-inf'), float('inf'), 0)
 
             game_graphics.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
             board_player.set_coord(coord_best_move[0], coord_best_move[1], color_computer)

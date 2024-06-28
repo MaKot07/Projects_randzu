@@ -128,6 +128,9 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
         all_coord = board_condition.now_coord_all_move_and_color
         return (find_position_score(bl_line, wh_line, all_coord), np.empty( (0), dtype=np.int8), count_variants)
 
+    average_dynamic_score = 0
+    count_average = 1
+
     if maximizingPlayer:
         value = float('-inf')
         possible_moves = generator_motion( last_variants_move_and_motion[0], last_variants_move_and_motion[1], board_condition.now_coord_all_move_and_color)
@@ -135,8 +138,20 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
         for move in possible_moves:
             child = board_condition.get_new_state(move, black)
 
+            #инамическая оценка, пока не корректно работает
+            # white_dynimic_score = dynamic_score_positions(board_condition.now_all_line_whiteplayer)
+            # black_dynimic_score = dynamic_score_positions(board_condition.now_all_line_blackplayer)
+            # if (white_dynimic_score+black_dynimic_score) > average_dynamic_score:
+            #     new_depth = depth + 1
+            # else:
+            #     new_depth = depth - 1
+            #
+            # average_dynamic_score = np.round((white_dynimic_score + black_dynimic_score + average_dynamic_score*count_average) / count_average)
+            # count_average += 1
+
+
             count_variants += 1
-            #print("#@%", count_variants)
+            print("#@%", count_variants)
             next_variants_move_and_motion = (move, possible_moves)
             tmp, _, count_variants = minimax(child, depth - 1, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
 
@@ -155,8 +170,19 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
         for move in possible_moves:
             child = board_condition.get_new_state(move, white)
 
+            # инамическая оценка, пока не корректно работает
+            # white_dynimic_score = dynamic_score_positions(board_condition.now_all_line_whiteplayer)
+            # black_dynimic_score = dynamic_score_positions(board_condition.now_all_line_blackplayer)
+            # if (white_dynimic_score + black_dynimic_score) > average_dynamic_score:
+            #     new_depth = depth + 1
+            # else:
+            #     new_depth = depth - 1
+            #
+            # average_dynamic_score = np.round((white_dynimic_score + black_dynimic_score + average_dynamic_score * count_average) / count_average)
+            # count_average += 1
+
             count_variants += 1
-            #print("#@%", count_variants)
+            print("#@%", count_variants)
             next_variants_move_and_motion = (move, possible_moves)
             tmp, _, count_variants = minimax(child, depth - 1, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
 
@@ -259,5 +285,16 @@ def find_position_score(now_all_line_blackplayer, now_all_line_whiteplayer, now_
             if give_len_line(line) == 1:
                 pos_score -= 10
     return pos_score
+
+
+@njit(cache=True)
+def dynamic_score_positions(all_line):
+    dynamic_score = 0
+    count_line = 0
+    for line in all_line:
+        dynamic_score += give_len_line(line)**2
+
+    return dynamic_score
+
 
 
