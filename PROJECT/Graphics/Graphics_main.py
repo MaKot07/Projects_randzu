@@ -11,6 +11,7 @@ cell_qty = 14
 cell_size = 40
 cell_size_ramka = 42
 colors = (234, 237, 204)
+
 board_shift = 30
 WHITE = (255, 255, 255)
 RED = (225, 0, 50)

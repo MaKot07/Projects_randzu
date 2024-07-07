@@ -217,9 +217,6 @@ def create_new_line(new_line_without_empty):
     return new_line_with_empty
 
 
-
-
-
 @njit(cache=True)
 def check_want_newgame(x_pixel, y_pixel):
     if x_pixel >= 700 and x_pixel <= 840 and y_pixel >= 180 and y_pixel < 250:
