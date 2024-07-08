@@ -3,7 +3,8 @@ import copy
 from numba import njit, jit, config
 from numba.typed import List
 from typing import List
-from numba import typed, typeof
+from numba import typed, typeof, types
+import numba
 
 
 
@@ -378,3 +379,10 @@ def remove_element_by_index(lst, idx):
 @njit
 def remove_element_from_list(lst, val):
     return [x for x in lst if not np.array_equal(x, val)]
+
+@njit
+def create_independent_dict(original):
+    new_dict = typed.Dict()
+    for key, value in original.items():
+        new_dict[key] = value
+    return new_dict
