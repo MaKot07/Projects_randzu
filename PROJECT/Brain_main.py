@@ -122,7 +122,7 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
 
     if board_condition.check_colors_win() != -1:
         return (board_condition.find_win_position_score(), (-1,-1), count_variants)
-    if depth == 0:
+    if depth <= 0:
         bl_line = board_condition.now_all_line_blackplayer
         wh_line = board_condition.now_all_line_whiteplayer
         all_coord = board_condition.now_coord_all_move_and_color
@@ -136,15 +136,15 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
             child = board_condition.get_new_state(move, black)
 
             count_variants += 1
-            #print("#@%", count_variants)
+            print("#@%", count_variants)
             next_variants_move_and_motion = (move, create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
-            tmp, _, count_variants = minimax(child, depth - 1, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
+            tmp, _, count_variants = minimax(child, depth - 1 + change_depth, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
 
             if tmp > value:
                 value = tmp
                 best_movement = move
 
-            if value > beta:
+            if value >= beta:
                 break
             alpha = max(alpha, value)
 
@@ -156,15 +156,15 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
             child = board_condition.get_new_state(move, white)
 
             count_variants += 1
-            #print("#@%", count_variants)
+            print("#@%", count_variants)
             next_variants_move_and_motion = (move, create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
-            tmp, _, count_variants = minimax(child, depth - 1, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
+            tmp, _, count_variants = minimax(child, depth - 1 + change_depth, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
 
             if tmp < value:
                 value = tmp
                 best_movement = move
 
-            if value < alpha:
+            if value <= alpha:
                 break
             beta = min(beta, value)
 
@@ -205,17 +205,18 @@ def new_generator_motion(new_coord_motion, now_coord_all_move_and_color, dict_wi
         for chip in list_with_sgen_chip_for_enemy:
             if dict_with_variants_for_enemy.get(chip) is not None:
                 if count_chip_enemy >= 2:
-                    dict_with_variants_for_enemy[chip] += 1
-                    dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
+                    if dict_with_variants_for_enemy.get(chip) < 0:
+                        dict_with_variants_for_enemy[chip] += 1
+                        dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
             else:
                 if count_chip_enemy == 1:
-                    dict_with_variants_for_enemy[chip] = -1
+                    dict_with_variants_for_enemy[chip] = -2
                     dict_with_variants_for_player[chip] = -2
                 if count_chip_enemy == 2:
-                    dict_with_variants_for_enemy[chip] = 0
+                    dict_with_variants_for_enemy[chip] = -1
                 if count_chip_enemy >= 3:
-                    dict_with_variants_for_enemy[chip] = 1
-                    dict_with_variants_for_player[chip] = 1
+                    dict_with_variants_for_enemy[chip] = 0
+                    dict_with_variants_for_player[chip] = 0
 
     #Анализ диагональных линий
     for flag in (0,1):
@@ -252,17 +253,18 @@ def new_generator_motion(new_coord_motion, now_coord_all_move_and_color, dict_wi
         for chip in list_with_sgen_chip_for_enemy:
             if dict_with_variants_for_enemy.get(chip) is not None:
                 if count_chip_enemy >= 2:
-                    dict_with_variants_for_enemy[chip] += 1
-                    dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
+                    if dict_with_variants_for_enemy.get(chip) < 0:
+                        dict_with_variants_for_enemy[chip] += 1
+                        dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
             else:
                 if count_chip_enemy == 1:
-                    dict_with_variants_for_enemy[chip] = -1
+                    dict_with_variants_for_enemy[chip] = -2
                     dict_with_variants_for_player[chip] = -2
                 if count_chip_enemy == 2:
-                    dict_with_variants_for_enemy[chip] = 0
+                    dict_with_variants_for_enemy[chip] = -1
                 if count_chip_enemy >= 3:
-                    dict_with_variants_for_enemy[chip] = 1
-                    dict_with_variants_for_player[chip] = 1
+                    dict_with_variants_for_enemy[chip] = 0
+                    dict_with_variants_for_player[chip] = 0
 
     return dict_with_variants_for_player, dict_with_variants_for_enemy
 
