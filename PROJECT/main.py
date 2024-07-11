@@ -42,18 +42,20 @@ def main():
 
         if game_graphics.give_number_move() % 2 != 0 and win_color == -1:
             Board_MinMax = Board(color_computer, board_player.give_all_line_blackplayer(), board_player.give_all_line_whiteplayer(), board_player.give_chips())
-            possible_moves_white_pl, possible_moves_black_pl = new_generator_motion( (index_x_rect, index_y_rect), board_player.give_chips(), create_independent_dict(possible_moves_white_pl), white, create_independent_dict(possible_moves_black_pl), black)
+            if possible_moves_black_pl.get((index_x_rect, index_y_rect)) is not None:
+                possible_moves_black_pl.pop((index_x_rect, index_y_rect))
+            if possible_moves_white_pl.get((index_x_rect, index_y_rect)) is not None:
+                possible_moves_white_pl.pop((index_x_rect, index_y_rect))
             next_variants_move_and_motion = ( (index_x_rect, index_y_rect),create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
 
-            best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 4, next_variants_move_and_motion, True, float('-inf'), float('inf'), 0)
+            best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 3, next_variants_move_and_motion, True, float('-inf'), float('inf'), 0)
 
             print("3#@#", count_all_variants)
-
 
             game_graphics.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
             board_player.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
 
-            possible_moves_black_pl, possible_moves_white_pl = new_generator_motion(coord_best_move, board_player.give_chips(), create_independent_dict(possible_moves_black_pl), black, create_independent_dict(possible_moves_white_pl), white)
+            possible_moves_black_pl, possible_moves_white_pl = new_generator_motion(coord_best_move, board_player.give_chips(), create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl), white)
 
             game_graphics.set_number_move()
 

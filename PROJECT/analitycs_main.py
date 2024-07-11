@@ -341,6 +341,13 @@ def check_motion_for_brain(x, y, now_coord_all_move_and_color):
     return False
 
 @njit(cache=True)
+def check_motion_for_generator(coord_chip_and_color, now_coord_all_move_and_color):
+    if coord_chip_and_color[0] <= cell_qty and coord_chip_and_color[0] >= 0 and coord_chip_and_color[1] <= cell_qty and coord_chip_and_color[1] >= 0:
+        if not check_in_2D_array(np.array([coord_chip_and_color[0], coord_chip_and_color[1], white], dtype=np.int8), now_coord_all_move_and_color) and not check_in_2D_array(np.array([coord_chip_and_color[0], coord_chip_and_color[1], black], dtype=np.int8), now_coord_all_move_and_color):
+            return True
+    return False
+
+@njit(cache=True)
 def in_list_all_lines(all_lines):
     result_list = []
     for arr in all_lines:
