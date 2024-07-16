@@ -210,11 +210,14 @@ def new_generator_motion(new_coord_motion, now_coord_all_move_and_color, dict_wi
                         dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
             else:
                 if count_chip_enemy == 1:
-                    dict_with_variants_for_enemy[chip] = -2
-                    dict_with_variants_for_player[chip] = -2
+                    dict_with_variants_for_enemy[chip] = -3
+                    dict_with_variants_for_player[chip] = -3
                 if count_chip_enemy == 2:
+                    dict_with_variants_for_enemy[chip] = -2
+                if count_chip_enemy == 3:
                     dict_with_variants_for_enemy[chip] = -1
-                if count_chip_enemy >= 3:
+                    dict_with_variants_for_player[chip] = -1
+                if count_chip_enemy > 3:
                     dict_with_variants_for_enemy[chip] = 0
                     dict_with_variants_for_player[chip] = 0
 
@@ -258,11 +261,14 @@ def new_generator_motion(new_coord_motion, now_coord_all_move_and_color, dict_wi
                         dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
             else:
                 if count_chip_enemy == 1:
-                    dict_with_variants_for_enemy[chip] = -2
-                    dict_with_variants_for_player[chip] = -2
+                    dict_with_variants_for_enemy[chip] = -3
+                    dict_with_variants_for_player[chip] = -3
                 if count_chip_enemy == 2:
+                    dict_with_variants_for_enemy[chip] = -2
+                if count_chip_enemy == 3:
                     dict_with_variants_for_enemy[chip] = -1
-                if count_chip_enemy >= 3:
+                    dict_with_variants_for_player[chip] = -1
+                if count_chip_enemy > 3:
                     dict_with_variants_for_enemy[chip] = 0
                     dict_with_variants_for_player[chip] = 0
 
