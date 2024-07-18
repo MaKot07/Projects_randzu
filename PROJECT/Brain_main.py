@@ -134,6 +134,12 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
 
         for move, change_depth in possible_moves_white_pl.items():
             child = board_condition.get_new_state(move, black)
+            tmp, _, count_variants = minimax(child, 0, last_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
+            if tmp >= 1000000:
+                return (tmp, move, count_variants)
+
+        for move, change_depth in possible_moves_white_pl.items():
+            child = board_condition.get_new_state(move, black)
 
             count_variants += 1
             print("#@%", count_variants)
@@ -144,13 +150,19 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
                 value = tmp
                 best_movement = move
 
-            if value >= beta:
+            if value > beta:
                 break
             alpha = max(alpha, value)
 
     else:
         value = float('inf')
         possible_moves_black_pl, possible_moves_white_pl = new_generator_motion(last_variants_move_and_motion[0], board_condition.now_coord_all_move_and_color, create_independent_dict(last_variants_move_and_motion[1]), create_independent_dict(last_variants_move_and_motion[2]), white)
+
+        for move, change_depth in possible_moves_white_pl.items():
+            child = board_condition.get_new_state(move, white)
+            tmp, _, count_variants = minimax(child, 0, last_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
+            if tmp <= -1000000:
+                return (tmp, move, count_variants)
 
         for move, change_depth in possible_moves_black_pl.items():
             child = board_condition.get_new_state(move, white)
@@ -164,7 +176,7 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
                 value = tmp
                 best_movement = move
 
-            if value <= alpha:
+            if value < alpha:
                 break
             beta = min(beta, value)
 

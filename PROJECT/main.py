@@ -16,8 +16,10 @@ def now_event():
 
 def main():
     win_color = -1
-    color_user = black
-    color_computer = white
+    color_user = white
+    color_computer = black
+    IsMaximing_computer = False
+    is_now_computer = True
     number_of_movies = 0
     index_x_rect, index_y_rect = 7, 7
 
@@ -37,10 +39,9 @@ def main():
 
     run = True
     while run:
-
         event = now_event()
 
-        if game_graphics.give_number_move() % 2 != 0 and win_color == -1:
+        if is_now_computer and win_color == -1:
             Board_MinMax = Board(color_computer, board_player.give_all_line_blackplayer(), board_player.give_all_line_whiteplayer(), board_player.give_chips())
             if possible_moves_black_pl.get((index_x_rect, index_y_rect)) is not None:
                 possible_moves_black_pl.pop((index_x_rect, index_y_rect))
@@ -48,27 +49,32 @@ def main():
                 possible_moves_white_pl.pop((index_x_rect, index_y_rect))
             next_variants_move_and_motion = ( (index_x_rect, index_y_rect),create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
 
-            best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 5, next_variants_move_and_motion, True, float('-inf'), float('inf'), 0)
+            if game_graphics.give_number_move() > 0:
+                best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 7, next_variants_move_and_motion, IsMaximing_computer, float('-inf'), float('inf'), 0)
+            else:
+                coord_best_move = (6,6)
+                count_all_variants = 0
 
             print("3#@#", count_all_variants)
 
             game_graphics.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
             board_player.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
 
-            possible_moves_black_pl, possible_moves_white_pl = new_generator_motion(coord_best_move, board_player.give_chips(), create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl), white)
+            if color_computer == white:
+                possible_moves_black_pl, possible_moves_white_pl = new_generator_motion(coord_best_move, board_player.give_chips(), create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl), white)
+            else:
+                possible_moves_white_pl, possible_moves_black_pl = new_generator_motion(coord_best_move, board_player.give_chips(), create_independent_dict(possible_moves_white_pl), create_independent_dict(possible_moves_black_pl), black)
 
             game_graphics.set_number_move()
 
             board_player.adding_lines(coord_best_move[0], coord_best_move[1], color_computer)
 
             win_color = board_player.check_colors_win()
-
-
+            is_now_computer = not is_now_computer
 
         else:
             if event != None:
                 if event.type == pygame.QUIT:
-                    run = False
                     sys.exit()
 
                 if event.button == 1:
@@ -85,6 +91,7 @@ def main():
 
                         #print("Black", board_player.give_all_line_blackplayer())
                         win_color = board_player.check_colors_win()
+                        is_now_computer = not is_now_computer
 
                     check_newgame = check_want_newgame(check_x, check_y)
                     if check_newgame == True:
