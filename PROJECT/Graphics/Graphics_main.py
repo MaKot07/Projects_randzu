@@ -53,6 +53,7 @@ class Game_Graphics:
         pygame.display.update()
         # pygame.time.delay(120)
 
+
     #@staticmethod
     def draw_main_board(self):
         board_words = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O']

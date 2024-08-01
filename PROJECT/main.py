@@ -37,7 +37,7 @@ def main():
 
     board = Board(color_user)
     
-    Player_play = False
+    Player_play = True
     if not Player_play:
         maximiz = False
         color_computer = black
@@ -53,7 +53,7 @@ def main():
     while run:
         if Player_play:
             event = now_event()
-            if comp_move != 0 and win_color == -1:
+            if comp_move != False and win_color == -1:
                 Board_MinMax = Board(color_computer, board.give_all_line_blackplayer(), board.give_all_line_whiteplayer(), board.give_chips())
                 if possible_moves_black_pl.get((index_x_rect, index_y_rect)) is not None:
                     possible_moves_black_pl.pop((index_x_rect, index_y_rect))

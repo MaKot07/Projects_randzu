@@ -202,52 +202,62 @@ def Find_evulate(individual):
         value_type=numba.types.int64
     )
 
+    ind_possible_moves_white_pl = typed.Dict.empty(
+        key_type=types.UniTuple(types.int64, 2),
+        value_type=numba.types.int64
+    )
+    ind_possible_moves_black_pl = typed.Dict.empty(
+        key_type=types.UniTuple(types.int64, 2),
+        value_type=numba.types.int64
+    )
+
     board = Board(color_computer)
 
     maximiz = False
-    color_computer = black
 
     run = True
     while win_color == -1:
-        Board_MinMax = Board(color_computer, board.give_all_line_blackplayer(),
+        Board_MinMax = Board(move_color, board.give_all_line_blackplayer(),
                              board.give_all_line_whiteplayer(), board.give_chips())
+
         if possible_moves_black_pl.get((index_x_rect, index_y_rect)) is not None:
             possible_moves_black_pl.pop((index_x_rect, index_y_rect))
         if possible_moves_white_pl.get((index_x_rect, index_y_rect)) is not None:
             possible_moves_white_pl.pop((index_x_rect, index_y_rect))
-        next_variants_move_and_motion = (
-            (index_x_rect, index_y_rect), create_independent_dict(possible_moves_black_pl),
-            create_independent_dict(possible_moves_white_pl))
+
+        if ind_possible_moves_black_pl.get((index_x_rect, index_y_rect)) is not None:
+            ind_possible_moves_black_pl.pop((index_x_rect, index_y_rect))
+        if ind_possible_moves_white_pl.get((index_x_rect, index_y_rect)) is not None:
+            ind_possible_moves_white_pl.pop((index_x_rect, index_y_rect))
 
         if number_of_movies == 0:
             coord_best_move = (6, 6)
             count_all_variants = 0
         else:
             if move_color == color_computer:
+                next_variants_move_and_motion = (
+                    (index_x_rect, index_y_rect), create_independent_dict(possible_moves_black_pl),
+                    create_independent_dict(possible_moves_white_pl))
                 best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 5,
                                                                           next_variants_move_and_motion, maximiz,
                                                                           float('-inf'), float('inf'), 0)
             else:
+                next_variants_move_and_motion = (
+                    (index_x_rect, index_y_rect), create_independent_dict(ind_possible_moves_black_pl),
+                    create_independent_dict(ind_possible_moves_white_pl))
+
                 best_value, coord_best_move, count_all_variants = minimax_for_genetic(Board_MinMax, individual[0],
                                                                           next_variants_move_and_motion, maximiz, individual[1:],
                                                                           float('-inf'), float('inf'), 0)
                 if count_all_variants >= max_count_variants:
-                    return 1000,
+                    return 10000,
 
         index_x_rect, index_y_rect = coord_best_move
 
 
-        board.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
+        board.set_coord(coord_best_move[0], coord_best_move[1], move_color)
 
-        if move_color == white:
-            possible_moves_black_pl, possible_moves_white_pl = new_generator_motion_for_genetic(coord_best_move,
-                                                                                    board.give_chips(),
-                                                                                    create_independent_dict(
-                                                                                        possible_moves_black_pl),
-                                                                                    create_independent_dict(
-                                                                                        possible_moves_white_pl),
-                                                                                    white, individual[1:])
-        else:
+        if move_color == color_computer:
             possible_moves_white_pl, possible_moves_black_pl = new_generator_motion(coord_best_move,
                                                                                     board.give_chips(),
                                                                                     create_independent_dict(
@@ -256,19 +266,45 @@ def Find_evulate(individual):
                                                                                         possible_moves_black_pl),
                                                                                     black)
 
+        else:
+            ind_possible_moves_white_pl, ind_possible_moves_black_pl = new_generator_motion_for_genetic(coord_best_move,
+                                                                                    board.give_chips(),
+                                                                                    create_independent_dict(
+                                                                                        ind_possible_moves_white_pl),
+                                                                                    create_independent_dict(
+                                                                                        ind_possible_moves_black_pl),
+                                                                                    black, individual[1:])
+        # if move_color == white:
+        #     possible_moves_black_pl, possible_moves_white_pl = new_generator_motion(coord_best_move,
+        #                                                                             board.give_chips(),
+        #                                                                             create_independent_dict(
+        #                                                                                 possible_moves_black_pl),
+        #                                                                             create_independent_dict(
+        #                                                                                 possible_moves_white_pl),
+        #                                                                             white)
+        # else:
+        #     possible_moves_white_pl, possible_moves_black_pl = new_generator_motion(coord_best_move,
+        #                                                                             board.give_chips(),
+        #                                                                             create_independent_dict(
+        #                                                                                 possible_moves_white_pl),
+        #                                                                             create_independent_dict(
+        #                                                                                 possible_moves_black_pl),
+        #                                                                             black)
 
-        board.adding_lines(coord_best_move[0], coord_best_move[1], color_computer)
+        board.adding_lines(coord_best_move[0], coord_best_move[1], move_color)
 
         win_color = board.check_colors_win()
-        maximiz = not maximiz
         number_of_movies += 1
+
+        maximiz = not maximiz
         if move_color == white:
             move_color = black
         else:
             move_color = white
 
+
     if win_color == 0:
-        return number_of_movies*(abs(30-number_of_movies)),
+        return (225-number_of_movies)**2,
     else:
         return number_of_movies,
 
@@ -282,10 +318,10 @@ LOW, UP = 0, 10
 ETA = 20
 LENGTH_CHROM = 6
 
-POPULATION_SIZE = 200   # количество индивидуумов в популяции
+POPULATION_SIZE = 100   # количество индивидуумов в популяции
 P_CROSSOVER = 0.9       # вероятность скрещивания
 P_MUTATION = 0.2        # вероятность мутации индивидуума
-MAX_GENERATIONS = 15    # максимальное количество поколений
+MAX_GENERATIONS = 25    # максимальное количество поколений
 HALL_OF_FAME_SIZE = 5
 
 hof = tools.HallOfFame(HALL_OF_FAME_SIZE)
