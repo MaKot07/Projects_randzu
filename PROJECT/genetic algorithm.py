@@ -1,7 +1,7 @@
 import sys
 import time
 
-#from Graphics.Graphics_main import *
+from Graphics.Graphics_main import *
 from Brain_main import *
 import numpy as np
 from numba import typed
@@ -213,8 +213,8 @@ def Find_evulate(individual):
 
     board = Board(color_computer)
 
-    # game_graphics = Game_Graphics(number_of_movies)
-    # game_graphics.draw_all_game(win_color)
+    game_graphics = Game_Graphics(number_of_movies)
+    game_graphics.draw_all_game(win_color)
 
     maximiz = False
 
@@ -282,11 +282,11 @@ def Find_evulate(individual):
         win_color = board.check_colors_win()
         number_of_movies += 1
 
-        # print(game_graphics.give_number_move())
-        # game_graphics.set_coord(coord_best_move[0], coord_best_move[1], move_color)
-        # game_graphics.set_number_move()
-        # game_graphics.draw_all_game(win_color)
-        # time.sleep(0.3)
+        print(game_graphics.give_number_move())
+        game_graphics.set_coord(coord_best_move[0], coord_best_move[1], move_color)
+        game_graphics.set_number_move()
+        game_graphics.draw_all_game(win_color)
+        time.sleep(1)
 
         maximiz = not maximiz
         if move_color == white:
@@ -302,6 +302,9 @@ def Find_evulate(individual):
 
 
 max_count_variants = 5000
+print(Find_evulate([10,0,3,5,7,7]))
+
+
 LOW, UP = 0, 10
 ETA = 20
 LENGTH_CHROM = 6
@@ -347,24 +350,24 @@ population = toolbox.populationCreator(n=POPULATION_SIZE)
 #     return individual,
 
 
-toolbox.register("evaluate", Find_evulate)
-toolbox.register("select", tools.selTournament, tournsize=3)
-toolbox.register("mate", tools.cxUniform, indpb=1.0/LENGTH_CHROM)
-toolbox.register("mutate", tools.mutUniformInt, low=LOW, up=UP, indpb=1.0/LENGTH_CHROM)
+# toolbox.register("evaluate", Find_evulate)
+# toolbox.register("select", tools.selTournament, tournsize=3)
+# toolbox.register("mate", tools.cxUniform, indpb=1.0/LENGTH_CHROM)
+# toolbox.register("mutate", tools.mutUniformInt, low=LOW, up=UP, indpb=1.0/LENGTH_CHROM)
 
-stats = tools.Statistics(lambda ind: ind.fitness.values)
-stats.register("min", np.min)
-stats.register("avg", np.mean)
+# stats = tools.Statistics(lambda ind: ind.fitness.values)
+# stats.register("min", np.min)
+# stats.register("avg", np.mean)
 
-population, logbook = algelitism.eaSimpleElitism(population, toolbox,
-                                        cxpb=P_CROSSOVER,
-                                        mutpb=P_MUTATION,
-                                        ngen=MAX_GENERATIONS,
-                                        halloffame=hof,
-                                        stats=stats,
-                                        verbose=True)
+# population, logbook = algelitism.eaSimpleElitism(population, toolbox,
+#                                         cxpb=P_CROSSOVER,
+#                                         mutpb=P_MUTATION,
+#                                         ngen=MAX_GENERATIONS,
+#                                         halloffame=hof,
+#                                         stats=stats,
+#                                         verbose=True)
 
-maxFitnessValues, meanFitnessValues = logbook.select("min", "avg")
+# maxFitnessValues, meanFitnessValues = logbook.select("min", "avg")
 
 best = hof.items[0]
 print(hof)

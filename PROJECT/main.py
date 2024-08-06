@@ -1,6 +1,6 @@
 import sys
 from Graphics.Graphics_main import *
-from PROJECT.Brain_main import *
+from Brain_main import *
 import numpy as np
 from numba import typed
 import numba
