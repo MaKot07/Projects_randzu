@@ -55,6 +55,7 @@ def eaSimpleElitism(population, toolbox, cxpb, mutpb, ngen, stats=None,
         if verbose:
             print(logbook.stream)
             if halloffame is not None:
+                print("ALL#@#", halloffame)
                 print("$@#@$", halloffame[0])
 
         if callback:

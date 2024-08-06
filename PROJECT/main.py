@@ -65,7 +65,7 @@ def main():
                     coord_best_move = (6, 6)
                     count_all_variants = 0
                 else:
-                    best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 5, next_variants_move_and_motion, maximiz, float('-inf'), float('inf'), 0)
+                    best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 6, next_variants_move_and_motion, maximiz, float('-inf'), float('inf'), 0)
     
                 print("3#@#", count_all_variants)
     

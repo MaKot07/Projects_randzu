@@ -213,6 +213,9 @@ def Find_evulate(individual):
 
     board = Board(color_computer)
 
+    # game_graphics = Game_Graphics(number_of_movies)
+    # game_graphics.draw_all_game(win_color)
+
     maximiz = False
 
     run = True
@@ -232,7 +235,6 @@ def Find_evulate(individual):
 
         if number_of_movies == 0:
             coord_best_move = (6, 6)
-            count_all_variants = 0
         else:
             if move_color == color_computer:
                 next_variants_move_and_motion = (
@@ -250,7 +252,7 @@ def Find_evulate(individual):
                                                                           next_variants_move_and_motion, maximiz, individual[1:],
                                                                           float('-inf'), float('inf'), 0)
                 if count_all_variants >= max_count_variants:
-                    return 10000,
+                    return 100000,
 
         index_x_rect, index_y_rect = coord_best_move
 
@@ -274,27 +276,17 @@ def Find_evulate(individual):
                                                                                     create_independent_dict(
                                                                                         ind_possible_moves_black_pl),
                                                                                     black, individual[1:])
-        # if move_color == white:
-        #     possible_moves_black_pl, possible_moves_white_pl = new_generator_motion(coord_best_move,
-        #                                                                             board.give_chips(),
-        #                                                                             create_independent_dict(
-        #                                                                                 possible_moves_black_pl),
-        #                                                                             create_independent_dict(
-        #                                                                                 possible_moves_white_pl),
-        #                                                                             white)
-        # else:
-        #     possible_moves_white_pl, possible_moves_black_pl = new_generator_motion(coord_best_move,
-        #                                                                             board.give_chips(),
-        #                                                                             create_independent_dict(
-        #                                                                                 possible_moves_white_pl),
-        #                                                                             create_independent_dict(
-        #                                                                                 possible_moves_black_pl),
-        #                                                                             black)
 
         board.adding_lines(coord_best_move[0], coord_best_move[1], move_color)
 
         win_color = board.check_colors_win()
         number_of_movies += 1
+
+        # print(game_graphics.give_number_move())
+        # game_graphics.set_coord(coord_best_move[0], coord_best_move[1], move_color)
+        # game_graphics.set_number_move()
+        # game_graphics.draw_all_game(win_color)
+        # time.sleep(0.3)
 
         maximiz = not maximiz
         if move_color == white:
@@ -309,19 +301,15 @@ def Find_evulate(individual):
         return number_of_movies,
 
 
-
-
-
-
 max_count_variants = 5000
 LOW, UP = 0, 10
 ETA = 20
 LENGTH_CHROM = 6
 
-POPULATION_SIZE = 100   # количество индивидуумов в популяции
+POPULATION_SIZE = 125   # количество индивидуумов в популяции
 P_CROSSOVER = 0.9       # вероятность скрещивания
 P_MUTATION = 0.2        # вероятность мутации индивидуума
-MAX_GENERATIONS = 25    # максимальное количество поколений
+MAX_GENERATIONS = 50    # максимальное количество поколений
 HALL_OF_FAME_SIZE = 5
 
 hof = tools.HallOfFame(HALL_OF_FAME_SIZE)
@@ -381,5 +369,6 @@ maxFitnessValues, meanFitnessValues = logbook.select("min", "avg")
 best = hof.items[0]
 print(hof)
 print(best)
+
 
 
