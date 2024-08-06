@@ -142,7 +142,7 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
             child = board_condition.get_new_state(move, black)
 
             count_variants += 1
-            print("#@%", count_variants)
+            #print("#@%", count_variants)
             next_variants_move_and_motion = (move, create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
             tmp, _, count_variants = minimax(child, depth - 1 + change_depth, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
 
@@ -168,7 +168,7 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
             child = board_condition.get_new_state(move, white)
 
             count_variants += 1
-            print("#@%", count_variants)
+            #print("#@%", count_variants)
             next_variants_move_and_motion = (move, create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
             tmp, _, count_variants = minimax(child, depth - 1 + change_depth, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
 
@@ -291,7 +291,6 @@ def find_start_line(x, y, flag):
     cell_qty = 14
     if flag == 0:
         x1, y1 = x, y
-        cell_qty = 14
         while x1 != 0 and y1 != 0:
             x1 -= 1
             y1 -= 1

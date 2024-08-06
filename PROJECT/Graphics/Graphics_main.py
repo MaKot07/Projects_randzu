@@ -1,9 +1,10 @@
 #import sys
 import pygame
-from Const import *
+# from Const import *
 import copy
 import numpy as np
 #from numba import jit
+import time
 
 black = 0
 white = 1
@@ -52,6 +53,7 @@ class Game_Graphics:
 
         pygame.display.update()
         # pygame.time.delay(120)
+
 
     #@staticmethod
     def draw_main_board(self):
