@@ -37,7 +37,6 @@ def main():
 
     run = True
     while run:
-
         event = now_event()
 
         if game_graphics.give_number_move() % 2 != 0 and win_color == -1:
@@ -48,7 +47,7 @@ def main():
                 possible_moves_white_pl.pop((index_x_rect, index_y_rect))
             next_variants_move_and_motion = ( (index_x_rect, index_y_rect),create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
 
-            best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 5, next_variants_move_and_motion, True, float('-inf'), float('inf'), 0)
+            best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 40, next_variants_move_and_motion, True, float('-inf'), float('inf'), 0)
 
             print("3#@#", count_all_variants)
 
@@ -62,8 +61,6 @@ def main():
             board_player.adding_lines(coord_best_move[0], coord_best_move[1], color_computer)
 
             win_color = board_player.check_colors_win()
-
-
 
         else:
             if event != None:
