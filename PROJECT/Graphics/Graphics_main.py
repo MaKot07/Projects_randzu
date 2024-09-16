@@ -6,7 +6,7 @@ import numpy as np
 #from numba import jit
 import time
 
-black = 0
+black = -1
 white = 1
 cell_qty = 14
 cell_size = 40
@@ -30,8 +30,8 @@ class Game_Graphics:
     __board_shift = 30
 
 
-    def __init__(self, number_of_movies):
-        self.__now_coord_all_move_and_color = np.empty(0, dtype=np.int8)
+    def __init__(self, number_of_movies, now_coord_all_move_and_color = np.empty(0, dtype=np.int8)):
+        self.__now_coord_all_move_and_color = now_coord_all_move_and_color
         self.__number_of_movies = number_of_movies
 
     def set_number_move(self):
@@ -44,10 +44,10 @@ class Game_Graphics:
     def draw_all_game(self, win_color):
         self.draw_screen()
         self.draw_main_board()
-        if self.__now_coord_all_move_and_color.size > 0:
+        if len(self.__now_coord_all_move_and_color) > 0:
             self.draw_all_shashky()
         self.text_output_number_of_movies()
-        if win_color != -1:
+        if win_color != 0:
             self.text_win(win_color)
         self.draw_button_newgame()
 

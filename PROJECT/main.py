@@ -15,7 +15,7 @@ def now_event():
             return event
 
 def main():
-    win_color = -1
+    win_color = 0
     color_user = black
     color_computer = white
     number_of_movies = 0
@@ -39,7 +39,7 @@ def main():
     while run:
         event = now_event()
 
-        if game_graphics.give_number_move() % 2 != 0 and win_color == -1:
+        if game_graphics.give_number_move() % 2 != 0 and win_color == 0:
             Board_MinMax = Board(color_computer, board_player.give_all_line_blackplayer(), board_player.give_all_line_whiteplayer(), board_player.give_chips())
             if possible_moves_black_pl.get((index_x_rect, index_y_rect)) is not None:
                 possible_moves_black_pl.pop((index_x_rect, index_y_rect))
@@ -72,7 +72,7 @@ def main():
                     check_x, check_y = give_coord(event)
 
                     check_correct_motion = board_player.check_motion(check_x, check_y)
-                    if check_correct_motion == True and win_color == -1:
+                    if check_correct_motion == True and win_color == 0:
                         index_x_rect, index_y_rect = give_coord_rect(event)
                         game_graphics.set_coord(index_x_rect, index_y_rect, color_user)
                         board_player.set_coord(index_x_rect, index_y_rect, color_user)
@@ -88,7 +88,7 @@ def main():
                         del game_graphics
                         del board_player
 
-                        win_color = -1
+                        win_color = 0
                         number_of_movies = 0
 
                         game_graphics = Game_Graphics( number_of_movies)

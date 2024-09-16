@@ -186,7 +186,7 @@ def new_generator_motion_for_genetic(new_coord_motion, now_coord_all_move_and_co
 
 
 def Find_evulate(individual):
-    win_color = -1
+    win_color = 0
     color_computer = black
     color_individual = white
     number_of_movies = 0
@@ -219,7 +219,7 @@ def Find_evulate(individual):
     maximiz = False
 
     run = True
-    while win_color == -1:
+    while win_color == 0:
         Board_MinMax = Board(move_color, board.give_all_line_blackplayer(),
                              board.give_all_line_whiteplayer(), board.give_chips())
 

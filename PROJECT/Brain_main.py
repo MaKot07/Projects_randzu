@@ -24,7 +24,7 @@ class Board:
         self.now_all_line_whiteplayer = np.copy(now_all_line_whiteplayer)
         self.color = color
         self.cell_qty = 14
-        self.black = np.int8(0)
+        self.black = np.int8(-1)
         self.white = np.int8(1)
 
 
@@ -87,7 +87,7 @@ class Board:
         if check_win_black:
             return black
 
-        return -1
+        return 0
 
     def find_win_position_score(self):
         pos_score = 0
@@ -120,7 +120,7 @@ class Board:
 @njit(cache=True)
 def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPlayer, alpha=float('-inf'), beta=float('inf'), count_variants=0):
 
-    if board_condition.check_colors_win() != -1:
+    if board_condition.check_colors_win() != 0:
         return (board_condition.find_win_position_score(), (-1,-1), count_variants)
     if depth <= 0:
         bl_line = board_condition.now_all_line_blackplayer

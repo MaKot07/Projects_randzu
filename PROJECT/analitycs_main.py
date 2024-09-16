@@ -8,7 +8,7 @@ import numba
 
 
 
-black = 0
+black = -1
 white = 1
 cell_qty = 14
 cell_size = 40
