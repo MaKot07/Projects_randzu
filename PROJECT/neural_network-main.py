@@ -6,21 +6,19 @@ from Brain_main import *
 import pandas as pd
 
 def generation_position_and_save(n, number_move):
-    if n%number_move != 0:
-        raise SystemExit("n не делится на number_move")
 
     black = -1
     white = 1
     cell_qty = 14
     color_move = black
-    percent_random = 0.1
-    percent_depth1 = 0.5
+    percent_random = 0.6
+    percent_depth1 = 0.9
 
 
-    for sample in range(int(n/number_move)):
+    for sample in range(n):
         sgen_board = Board(black)
 
-        coord_move = (np.random.randint(0, 11), np.random.randint(0, 11))
+        coord_move = (np.random.randint(5, 8), np.random.randint(5, 8))
         sgen_board.set_coord(coord_move[0], coord_move[1], black)
         sgen_board.adding_lines(coord_move[0], coord_move[1], black)
 
@@ -33,39 +31,38 @@ def generation_position_and_save(n, number_move):
             level_choice = np.random.random()
 
             if level_choice <= percent_random:
-                variants_move = P_generator_motion(coord_move, sgen_board.give_chips(), variants_move)
+                variants_move = P_generator_motion(coord_move, sgen_board.give_chips(), copy.copy(variants_move))
                 coord_move = variants_move[np.random.randint(0, len(variants_move)-1)]
-
-                try:
-                    sgen_board.set_coord(coord_move[0], coord_move[1], color_move)
-                    sgen_board.adding_lines(coord_move[0], coord_move[1], color_move)
-                except  Exception:
-                    print(coord_move, " Слишком мал")
-
-                make_position(sgen_board.give_chips())
-
-            elif level_choice <= 0.4:
-                maximizing = True if color_move == white else False
-                _, coord_move, _ = sily_minimax(sgen_board, 1, variants_move, maximizing)
 
 
                 sgen_board.set_coord(coord_move[0], coord_move[1], color_move)
                 sgen_board.adding_lines(coord_move[0], coord_move[1], color_move)
 
-                variants_move = P_generator_motion(coord_move, sgen_board.give_chips(), variants_move)
+                make_position(sgen_board.give_chips())
+
+            elif level_choice <= percent_depth1 and True:
+                maximizing = True if color_move == white else False
+                variants_move = P_generator_motion(coord_move, sgen_board.give_chips(), copy.copy(variants_move))
+                _, coord_move, c = sily_minimax(sgen_board, 1, variants_move, maximizing)
+
+                sgen_board.set_coord(coord_move[0], coord_move[1], color_move)
+                sgen_board.adding_lines(coord_move[0], coord_move[1], color_move)
 
                 make_position(sgen_board.give_chips())
 
             else:
                 maximizing = True if color_move == white else False
+                variants_move = P_generator_motion(coord_move, sgen_board.give_chips(), copy.copy(variants_move))
                 _, coord_move, _ = sily_minimax(sgen_board, 2, variants_move, maximizing)
 
                 sgen_board.set_coord(coord_move[0], coord_move[1], color_move)
                 sgen_board.adding_lines(coord_move[0], coord_move[1], color_move)
 
-                variants_move = P_generator_motion(coord_move, sgen_board.give_chips(), variants_move)
-
                 make_position(sgen_board.give_chips())
+
+            win_color = sgen_board.check_colors_win()
+            if win_color != 0:
+                break
 
             if color_move == black:
                 color_move = white
@@ -74,8 +71,8 @@ def generation_position_and_save(n, number_move):
 
 
 def make_position(all_coords):
-    len_board = 14
-    position = np.zeros((255), dtype=np.int8)
+    len_board = 15
+    position = np.zeros((225), dtype=np.int8)
 
     for i in range(len(all_coords)):
         position[ all_coords[i][1]*len_board + all_coords[i][0] ] = all_coords[i][2]
@@ -100,19 +97,11 @@ def sily_minimax(board_condition, depth, last_variants, maximizingPlayer, alpha=
 
         for move in last_variants:
             child = board_condition.get_new_state(move, black)
-            new_variants_move = P_generator_motion(move, board_condition.give_chips(), last_variants)
-
-            tmp, _, count_variants = sily_minimax(child, 0, new_variants_move, not maximizingPlayer, alpha, beta, count_variants)
-            if tmp >= 1000000:
-                return (tmp, move, count_variants)
-
-        for move in last_variants:
-            child = board_condition.get_new_state(move, black)
-            new_variants_move = P_generator_motion(move, board_condition.give_chips(), last_variants)
+            new_variants_move = P_generator_motion(move, board_condition.give_chips(), copy.copy(last_variants))
 
             count_variants += 1
             #print("#@%", count_variants)
-            tmp, _, count_variants = sily_minimax(child, depth - 1, new_variants_move, not maximizingPlayer, alpha, beta, count_variants)
+            tmp, _, count_variants = sily_minimax(child, depth - 1, copy.copy(new_variants_move), not maximizingPlayer, alpha, beta, count_variants)
 
             if tmp > value:
                 value = tmp
@@ -127,18 +116,11 @@ def sily_minimax(board_condition, depth, last_variants, maximizingPlayer, alpha=
 
         for move in last_variants:
             child = board_condition.get_new_state(move, white)
-            new_variants_move = P_generator_motion(move, board_condition.give_chips(), last_variants)
-            tmp, _, count_variants = sily_minimax(child, 0, new_variants_move, not maximizingPlayer, alpha, beta, count_variants)
-            if tmp <= -1000000:
-                return (tmp, move, count_variants)
-
-        for move in last_variants:
-            child = board_condition.get_new_state(move, white)
-            new_variants_move = P_generator_motion(move, board_condition.give_chips(), last_variants)
+            new_variants_move = P_generator_motion(move, board_condition.give_chips(), copy.copy(last_variants))
 
             count_variants += 1
             #print("#@%", count_variants)
-            tmp, _, count_variants = sily_minimax(child, depth - 1, new_variants_move, not maximizingPlayer, alpha, beta, count_variants)
+            tmp, _, count_variants = sily_minimax(child, depth - 1, copy.copy(new_variants_move), not maximizingPlayer, alpha, beta, count_variants)
 
             if tmp < value:
                 value = tmp
@@ -170,10 +152,10 @@ def show_positions():
 
             if event.button == 1:
                 Visual_board = Game_Graphics(0, convert_positions(positions[i]))
-                Visual_board.draw_all_game(-1)
+                Visual_board.draw_all_game(0)
 
                 i +=1
-                if i > len(positions):
+                if i == len(positions):
                     sys.exit()
 
 def now_event():
@@ -185,20 +167,20 @@ def now_event():
             return event
 
 def convert_positions(position):
-    len_board = 14
+    len_board = 15
 
     conv_pos = []
 
-    for i in range(len_board+1):
-        for j in range(len_board+1):
-            if position[ i*len_board + j] != 0:
-                conv_pos.append(( j, i, position[ i*len_board + j] ))
+    for i in range(len_board):
+        for j in range(len_board):
+            if position[ i*len_board + j ] != 0:
+                conv_pos.append(( j, i, position[ i*len_board + j ] ))
 
     return conv_pos
 
 
 
-generation_position_and_save(100, 50)
+generation_position_and_save(2, 50)
 
 
 
