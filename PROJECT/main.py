@@ -48,7 +48,7 @@ def main():
             next_variants_move_and_motion = ( (index_x_rect, index_y_rect),create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
 
             maxim = True if color_computer == white else False
-            best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 40, next_variants_move_and_motion, maxim, float('-inf'), float('inf'), 0)
+            best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 35, next_variants_move_and_motion, maxim, float('-inf'), float('inf'), 0)
 
             print("3#@#", count_all_variants)
 
