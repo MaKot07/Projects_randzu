@@ -159,6 +159,10 @@ def show_positions():
     positions = np.loadtxt(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\neural_network\train_data.csv', delimiter=',',
                      dtype=int)
 
+    labels = np.loadtxt(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\neural_network\train_labels.csv',
+                           delimiter=',',
+                           dtype=int)
+
     # all_black_lines = np.loadtxt(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\neural_network\train_data_for_labels(black).csv', delimiter=',',
     #                  dtype=int)
     with open(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\neural_network\train_data_for_labels(black).csv', 'rb') as file:
@@ -196,9 +200,13 @@ def show_positions():
 
             if event.button == 1:
                 Visual_board = Game_Graphics(0, convert_positions(positions[i]))
-                Visual_board.draw_all_game(0)
-                print("BLACK", all_black_lines[i])
-                print("WHITE", all_white_lines[i])
+
+                coords = (labels[i]-(labels[i]//15)*15, labels[i]//15)
+                print(coords)
+                index_x_rect, index_y_rect = coords[0], coords[1]
+                Visual_board.draw_all_game(0, ( index_x_rect, index_y_rect))
+                # print("BLACK", all_black_lines[i])
+                # print("WHITE", all_white_lines[i])
 
                 i +=1
                 if i == len(positions):
@@ -220,12 +228,16 @@ def convert_positions(position):
     for i in range(len_board):
         for j in range(len_board):
             if position[ i*len_board + j ] != 0:
-                conv_pos.append(( j, i, position[ i*len_board + j ] ))
+                conv_pos.append(np.array(( j, i, position[ i*len_board + j ] )))
 
     return np.array(conv_pos, dtype=np.int8)
 
 
 def generation_labels():
+    labels = np.loadtxt(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\neural_network\train_labels.csv',
+                        delimiter=',',
+                        dtype=int)
+
     positions = np.loadtxt(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\neural_network\train_data.csv',
                            delimiter=',',
                            dtype=int)
@@ -255,8 +267,8 @@ def generation_labels():
         value_type=numba.types.int64
     )
 
-    for sample in range(len(positions)):
-        print("Succesfull is:", (len(positions)/100)*(sample+1), "%")
+    for sample in range(len(labels), len(positions)):
+        print("Succesfull is:", ((sample+1)/len(positions))*100, "%")
         position = convert_positions(positions[sample])
 
         if len(position) % 2 == 0:
@@ -274,13 +286,13 @@ def generation_labels():
                                                                                                        create_independent_dict(
                                                                                                            possible_moves_black_pl),
                                                                                                        black)
-
         next_variants_move_and_motion = ((-1,-1), create_independent_dict(possible_moves_black_pl),
                                          create_independent_dict(possible_moves_white_pl))
 
         maxim = True if color_minmax == white else False
-        best_value, coord_best_move, count_all_variants = minimax(Board_MinMax_for_labels, 40, next_variants_move_and_motion,
+        best_value, coord_best_move, count_all_variants = minimax(Board_MinMax_for_labels, 35, next_variants_move_and_motion,
                                                                   maxim, float('-inf'), float('inf'), 0)
+
 
         new_labels = np.array([coord_best_move[1]*15 + coord_best_move[0]])
         print(coord_best_move, " ", new_labels)
@@ -288,6 +300,15 @@ def generation_labels():
         with open(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\neural_network\train_labels.csv', 'a',
                   newline='') as file:
             np.savetxt(file, new_labels, delimiter=',', newline='\n', fmt='%d')
+
+        possible_moves_white_pl = typed.Dict.empty(
+            key_type=types.UniTuple(types.int64, 2),
+            value_type=numba.types.int64
+        )
+        possible_moves_black_pl = typed.Dict.empty(
+            key_type=types.UniTuple(types.int64, 2),
+            value_type=numba.types.int64
+        )
 
 
 def new_generator_motion_for_create_start_moves(now_coord_all_move_and_color, dict_with_variants_for_player, dict_with_variants_for_enemy, color_enemy):
@@ -301,7 +322,6 @@ def new_generator_motion_for_create_start_moves(now_coord_all_move_and_color, di
             all_coords.append((coord[0], coord[1]))
 
     for new_coord_motion in all_coords:
-
         #Анализ вертикальной линии и горизоньальной
         for a,b in [[0,1], [1,0]]:
             count_chip_enemy = 0
@@ -402,8 +422,7 @@ def new_generator_motion_for_create_start_moves(now_coord_all_move_and_color, di
 #generation_position_and_save(100, 50)
 
 
+generation_labels()
+
 
 #show_positions()
-
-
-generation_labels()

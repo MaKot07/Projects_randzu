@@ -41,11 +41,12 @@ class Game_Graphics:
         return self.__number_of_movies
 
 
-    def draw_all_game(self, win_color):
+    def draw_all_game(self, win_color, label_chip=(-1,-1)):
         self.draw_screen()
         self.draw_main_board()
         if len(self.__now_coord_all_move_and_color) > 0:
-            self.draw_all_shashky()
+            self.draw_all_shashky(label_chip)
+
         self.text_output_number_of_movies()
         if win_color != 0:
             self.text_win(win_color)
@@ -78,12 +79,14 @@ class Game_Graphics:
                 text2 = f1.render('1', 1, BLACK)
                 screen.blit(text2, (5, (y + 1) * Game_Graphics.__cell_size_ramka + 20))
 
-    def draw_all_shashky(self):
+    def draw_all_shashky(self, label_chip):
         for index_x_rect, index_y_rect, color_player in self.__now_coord_all_move_and_color:
             if color_player == black:
                 pygame.draw.circle(screen, BLACK, (index_x_rect * cell_size_ramka + board_shift, index_y_rect * cell_size_ramka + board_shift), 10)
             else:
                 pygame.draw.circle(screen, WHITE, (index_x_rect * cell_size_ramka + board_shift, index_y_rect * cell_size_ramka + board_shift), 10)
+        if label_chip != (-1,-1):
+            pygame.draw.circle(screen, (0, 225, 0), (label_chip[0] * cell_size_ramka + board_shift, label_chip[1] * cell_size_ramka + board_shift), 10)
 
     #@staticmethod
     def draw_screen(self):

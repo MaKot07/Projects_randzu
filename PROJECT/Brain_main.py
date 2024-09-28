@@ -127,11 +127,12 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
         wh_line = board_condition.now_all_line_whiteplayer
         all_coord = board_condition.now_coord_all_move_and_color
         return (find_position_score(bl_line, wh_line, all_coord), (-1,-1), count_variants)
+    if count_variants == 15000:
+        return (0, (-1, -1), count_variants)
 
     if maximizingPlayer:
         value = float('-inf')
         possible_moves_white_pl, possible_moves_black_pl = new_generator_motion(last_variants_move_and_motion[0], board_condition.now_coord_all_move_and_color, create_independent_dict(last_variants_move_and_motion[2]), create_independent_dict(last_variants_move_and_motion[1]), black)
-
         for move, change_depth in possible_moves_white_pl.items():
             child = board_condition.get_new_state(move, black)
             tmp, _, count_variants = minimax(child, 0, last_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
