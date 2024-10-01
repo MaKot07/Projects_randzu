@@ -1,6 +1,7 @@
 import sys
 from Graphics.Graphics_main import *
 from PROJECT.Brain_main import *
+from neural_network import *
 import numpy as np
 from numba import typed
 import numba
@@ -20,6 +21,8 @@ def main():
     color_computer = white
     number_of_movies = 0
     index_x_rect, index_y_rect = 7, 7
+    len_board = 15
+    play_neural_network = True
 
     possible_moves_white_pl = typed.Dict.empty(
         key_type=types.UniTuple(types.int64, 2),
@@ -35,33 +38,87 @@ def main():
 
     board_player = Board(color_user)
 
+    if color_computer == white:
+        comp_move = False
+    else:
+        comp_move = True
+
     run = True
     while run:
         event = now_event()
 
-        if game_graphics.give_number_move() % 2 != 0 and win_color == 0:
-            Board_MinMax = Board(color_computer, board_player.give_all_line_blackplayer(), board_player.give_all_line_whiteplayer(), board_player.give_chips())
-            if possible_moves_black_pl.get((index_x_rect, index_y_rect)) is not None:
-                possible_moves_black_pl.pop((index_x_rect, index_y_rect))
-            if possible_moves_white_pl.get((index_x_rect, index_y_rect)) is not None:
-                possible_moves_white_pl.pop((index_x_rect, index_y_rect))
-            next_variants_move_and_motion = ( (index_x_rect, index_y_rect),create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
+        if comp_move and win_color == 0:
+            if play_neural_network:
+                if game_graphics.give_number_move() > 3:
+                    model = train_neural_network()
 
-            maxim = True if color_computer == white else False
-            best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 35, next_variants_move_and_motion, maxim, float('-inf'), float('inf'), 0)
+                    position = np.zeros((1,225), dtype=np.int8)
+                    for i in range(len(board_player.give_chips())):
+                        position[0][board_player.give_chips()[i][1] * len_board + board_player.give_chips()[i][0]] = board_player.give_chips()[i][2]
+                    if np.sum(position[0]) == 0:
+                        for j in range(len(position[0])):
+                            position[0][j] = 1 if position[0][j] == -1 else -1
+                    else:
+                        for j in range(len(position[0])):
+                            position[0][j] = 1 if position[0][j] == 1 else -1
 
-            print("3#@#", count_all_variants)
 
-            game_graphics.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
-            board_player.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
+                    not_convert_coord = model.predict(position)[0]
+                    label = np.where(not_convert_coord == max(not_convert_coord))[0][0]
+                    coord_best_move = (label-(label//15)*15, label//15)
 
-            possible_moves_black_pl, possible_moves_white_pl = new_generator_motion(coord_best_move, board_player.give_chips(), create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl), white)
+                    game_graphics.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
+                    board_player.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
 
-            game_graphics.set_number_move()
+                    game_graphics.set_number_move()
 
-            board_player.adding_lines(coord_best_move[0], coord_best_move[1], color_computer)
+                    board_player.adding_lines(coord_best_move[0], coord_best_move[1], color_computer)
 
-            win_color = board_player.check_colors_win()
+                    win_color = board_player.check_colors_win()
+                    comp_move = not comp_move
+                else:
+                    maximizing = True if color_computer == white else False
+                    variants_move = silly_P_generator_motion(board_player.give_chips())
+
+                    Board_SillyMinMax = Board(color_computer, board_player.give_all_line_blackplayer(),
+                                              board_player.give_all_line_whiteplayer(), board_player.give_chips())
+
+                    _, coord_best_move, c = sily_minimax(Board_SillyMinMax, 1, variants_move, maximizing)
+
+                    game_graphics.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
+                    board_player.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
+
+                    game_graphics.set_number_move()
+
+                    board_player.adding_lines(coord_best_move[0], coord_best_move[1], color_computer)
+
+                    win_color = board_player.check_colors_win()
+                    comp_move = not comp_move
+
+            else:
+                Board_MinMax = Board(color_computer, board_player.give_all_line_blackplayer(), board_player.give_all_line_whiteplayer(), board_player.give_chips())
+                if possible_moves_black_pl.get((index_x_rect, index_y_rect)) is not None:
+                    possible_moves_black_pl.pop((index_x_rect, index_y_rect))
+                if possible_moves_white_pl.get((index_x_rect, index_y_rect)) is not None:
+                    possible_moves_white_pl.pop((index_x_rect, index_y_rect))
+                next_variants_move_and_motion = ( (index_x_rect, index_y_rect),create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
+
+                maxim = True if color_computer == white else False
+                best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 35, next_variants_move_and_motion, maxim, float('-inf'), float('inf'), 0)
+
+                print("3#@#", count_all_variants)
+
+                game_graphics.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
+                board_player.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
+
+                possible_moves_black_pl, possible_moves_white_pl = new_generator_motion(coord_best_move, board_player.give_chips(), create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl), white)
+
+                game_graphics.set_number_move()
+
+                board_player.adding_lines(coord_best_move[0], coord_best_move[1], color_computer)
+
+                win_color = board_player.check_colors_win()
+                comp_move = not comp_move
 
         else:
             if event != None:
@@ -83,6 +140,7 @@ def main():
 
                         #print("Black", board_player.give_all_line_blackplayer())
                         win_color = board_player.check_colors_win()
+                        comp_move = not comp_move
 
                     check_newgame = check_want_newgame(check_x, check_y)
                     if check_newgame == True:

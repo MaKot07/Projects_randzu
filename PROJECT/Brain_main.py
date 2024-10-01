@@ -127,7 +127,7 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
         wh_line = board_condition.now_all_line_whiteplayer
         all_coord = board_condition.now_coord_all_move_and_color
         return (find_position_score(bl_line, wh_line, all_coord), (-1,-1), count_variants)
-    if count_variants == 15000:
+    if count_variants >= 15000:
         return (0, (-1, -1), count_variants)
 
     if maximizingPlayer:
@@ -146,6 +146,9 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
             #print("#@%", count_variants)
             next_variants_move_and_motion = (move, create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
             tmp, _, count_variants = minimax(child, depth - 1 + change_depth, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
+
+            if count_variants >= 15000:
+                break
 
             if tmp > value:
                 value = tmp
@@ -172,6 +175,9 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
             #print("#@%", count_variants)
             next_variants_move_and_motion = (move, create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
             tmp, _, count_variants = minimax(child, depth - 1 + change_depth, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
+
+            if count_variants >= 15000:
+                break
 
             if tmp < value:
                 value = tmp
@@ -325,6 +331,19 @@ def P_generator_motion(new_coord_motion, now_coord_all_move_and_color, last_vari
         last_variants_motion.pop(last_variants_motion.index(new_coord_motion))
 
     return sgen_motion + last_variants_motion
+
+def silly_P_generator_motion(now_coord_all_move_and_color):
+    sgen_motion = []
+
+    for coord in now_coord_all_move_and_color:
+        for x_coord in [coord[0] - 1, coord[0] + 2]:
+            for y_coord in [coord[1] - 1, coord[1] + 2]:
+                check_new_motion = check_motion_for_brain(x_coord, y_coord, now_coord_all_move_and_color)
+                if check_new_motion and (x_coord, y_coord) not in sgen_motion:
+                    new_chip = (x_coord, y_coord)
+                    sgen_motion.append(new_chip)
+
+    return sgen_motion
 
 
 @njit(cache=True)
