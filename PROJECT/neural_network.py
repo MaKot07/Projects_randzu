@@ -300,13 +300,17 @@ def generation_labels():
         best_value, coord_best_move, count_all_variants = minimax(Board_MinMax_for_labels, 35, next_variants_move_and_motion,
                                                                   maxim, float('-inf'), float('inf'), 0)
 
-        new_labels = np.zeros((len(labels), 255))
-        new_labels[coord_best_move[1]*15 + coord_best_move[0]] = 1
-        print(coord_best_move, " ", new_labels)
+        if coord_best_move[0] >= 0:
+            new_labels = np.zeros((255))
+            new_labels[coord_best_move[1]*15 + coord_best_move[0]] = 1
+            #print(coord_best_move, " ", new_labels)
+        else:
+            new_labels = np.zeros((255))
+            new_labels[0] = -1000
 
         with open(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\neural_network\train_labels.csv', 'a',
                   newline='') as file:
-            np.savetxt(file, new_labels, delimiter=',', newline='\n', fmt='%d')
+            np.savetxt(file, [new_labels], delimiter=',', newline='\n', fmt='%d')
 
         possible_moves_white_pl = typed.Dict.empty(
             key_type=types.UniTuple(types.int64, 2),
@@ -504,10 +508,10 @@ def build_model():
     return model
 
 
-generation_position_and_save(10000, 50)
+#generation_position_and_save(10000, 50)
 
 
-#generation_labels()
+generation_labels()
 
 
 #show_positions()

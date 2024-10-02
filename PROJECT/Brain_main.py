@@ -127,7 +127,7 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
         wh_line = board_condition.now_all_line_whiteplayer
         all_coord = board_condition.now_coord_all_move_and_color
         return (find_position_score(bl_line, wh_line, all_coord), (-1,-1), count_variants)
-    if count_variants >= 15000:
+    if count_variants >= 20000:
         return (0, (-1, -1), count_variants)
 
     if maximizingPlayer:
@@ -147,7 +147,7 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
             next_variants_move_and_motion = (move, create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
             tmp, _, count_variants = minimax(child, depth - 1 + change_depth, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
 
-            if count_variants >= 15000:
+            if count_variants >= 20000:
                 break
 
             if tmp > value:
@@ -176,7 +176,7 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
             next_variants_move_and_motion = (move, create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
             tmp, _, count_variants = minimax(child, depth - 1 + change_depth, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
 
-            if count_variants >= 15000:
+            if count_variants >= 20000:
                 break
 
             if tmp < value:
