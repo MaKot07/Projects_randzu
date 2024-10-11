@@ -23,6 +23,8 @@ def main():
     index_x_rect, index_y_rect = 7, 7
     len_board = 15
     play_neural_network = True
+    if play_neural_network:
+        model = keras.models.load_model(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\neural_network\best_model.keras')
 
     possible_moves_white_pl = typed.Dict.empty(
         key_type=types.UniTuple(types.int64, 2),
@@ -50,22 +52,24 @@ def main():
         if comp_move and win_color == 0:
             if play_neural_network:
                 if game_graphics.give_number_move() > 3:
-                    model = train_neural_network()
 
                     position = np.zeros((1,225), dtype=np.int8)
                     for i in range(len(board_player.give_chips())):
                         position[0][board_player.give_chips()[i][1] * len_board + board_player.give_chips()[i][0]] = board_player.give_chips()[i][2]
                     if np.sum(position[0]) == 0:
                         for j in range(len(position[0])):
-                            position[0][j] = 1 if position[0][j] == -1 else -1
+                            position[0][j] = 1 if position[0][j] == -1 else 0.5
                     else:
                         for j in range(len(position[0])):
-                            position[0][j] = 1 if position[0][j] == 1 else -1
+                            position[0][j] = 1 if position[0][j] == 1 else 0.5
 
+                    #для старой модели
+                    # not_convert_coord = model.predict(position)[0]
+                    # label = np.where(not_convert_coord == max(not_convert_coord))[0][0]
+                    # coord_best_move = (label-(label//15)*15, label//15)
 
-                    not_convert_coord = model.predict(position)[0]
-                    label = np.where(not_convert_coord == max(not_convert_coord))[0][0]
-                    coord_best_move = (label-(label//15)*15, label//15)
+                    not_round_coord_best_move = model.predict(position)[0]
+                    coord_best_move = (round(not_round_coord_best_move[0]), round(not_round_coord_best_move[1]))
 
                     game_graphics.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
                     board_player.set_coord(coord_best_move[0], coord_best_move[1], color_computer)

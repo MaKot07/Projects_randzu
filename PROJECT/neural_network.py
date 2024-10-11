@@ -4,6 +4,7 @@ import copy
 
 from tensorflow import keras
 from tensorflow.keras import layers
+import tensorflow as tf
 
 import matplotlib.pyplot as plt
 
@@ -26,7 +27,7 @@ def generation_position_and_save(n, number_move):
     while ni < n:
         sgen_board = Board(black)
 
-        coord_move = (np.random.randint(5, 7), np.random.randint(5, 7))
+        coord_move = (np.random.randint(5, 9), np.random.randint(5, 9))
         sgen_board.set_coord(coord_move[0], coord_move[1], black)
         sgen_board.adding_lines(coord_move[0], coord_move[1], black)
 
@@ -208,9 +209,10 @@ def show_positions():
             if event.button == 1:
                 Visual_board = Game_Graphics(0, convert_positions(positions[i]))
 
-                coords = (labels[i]-(labels[i]//15)*15, labels[i]//15)
-                print(coords)
-                index_x_rect, index_y_rect = coords[0], coords[1]
+                label = np.where(labels[i] == max(labels[i]))[0][0]
+                coord_best_move = (label - (label // 15) * 15, label // 15)
+                print(coord_best_move)
+                index_x_rect, index_y_rect = coord_best_move[0], coord_best_move[1]
                 Visual_board.draw_all_game(0, ( index_x_rect, index_y_rect))
                 # print("BLACK", all_black_lines[i])
                 # print("WHITE", all_white_lines[i])
@@ -301,12 +303,12 @@ def generation_labels():
                                                                   maxim, float('-inf'), float('inf'), 0)
 
         if coord_best_move[0] >= 0:
-            new_labels = np.zeros((255))
+            new_labels = np.zeros((255), dtype=np.int8)
             new_labels[coord_best_move[1]*15 + coord_best_move[0]] = 1
             #print(coord_best_move, " ", new_labels)
         else:
             new_labels = np.zeros((255))
-            new_labels[0] = -1000
+            new_labels[0] = -100
 
         with open(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\neural_network\train_labels.csv', 'a',
                   newline='') as file:
@@ -440,49 +442,77 @@ def train_neural_network():
 
     empty_pos = []
     for i in range(len(labels)):
-        if labels[i] < 0:
+        if labels[i][0] < -10 or labels[i][0] == 1:
             empty_pos.append(i)
 
     labels = np.delete(labels, empty_pos, axis=0)
     positions = np.delete(positions, empty_pos, axis=0)
+    positions = np.copy(positions[0:len(labels)])
+
+
 
     for i in range(len(positions)):
         if np.sum(positions[i]) == 0:
             for j in range(len(positions[i])):
-                positions[i][j] = 1 if positions[i][j] == -1 else -1
+                positions[i][j] = 1 if positions[i][j] == -1 else 0.5
         else:
             for j in range(len(positions[i])):
-                positions[i][j] = 1 if positions[i][j] == 1 else -1
+                positions[i][j] = 1 if positions[i][j] == 1 else 0.5
+
+    new_labels = np.zeros((len(labels), 2))
+    for i in range(len(labels)):
+        l = np.where(labels[i] == max(labels[i]))[0][0]
+        coord_best_move = (l - (l // 15) * 15, l // 15)
+        new_labels[i][0], new_labels[i][0] = coord_best_move
+
 
 
     indices_0 = np.random.permutation(positions.shape[0])
     training_data = positions[indices_0]
-    training_output = labels[indices_0]
+    training_output = new_labels[indices_0]
 
     model = build_model()
 
-    x_val = training_data[:15]
-    partial_x_train = training_data[15:]
-    y_val = training_output[:15]
-    partial_y_train = training_output[15:]
+
+
+    x_val = training_data[:1000]
+    partial_x_train = training_data[1000:]
+    y_val = training_output[:1000]
+    partial_y_train = training_output[1000:]
+
+    checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+        filepath='neural_network/best_model.keras',
+        monitor='val_loss',
+        verbose=1,
+        save_best_only=True,
+        mode='min'
+    )
+
+    #lr_scheduler = tf.keras.callbacks.LearningRateScheduler(create_schedule_lr(model)) #простой вариант
+    # patience = 5  # количество эпох, которые нужно ждать перед изменением lr
+    # lr_scheduler = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss ',
+    #                                 patience=patience,
+    #                                 factor=0.5,
+    #                                 min_lr=0.001)
 
     history = model.fit(partial_x_train,
                         partial_y_train,
-                        epochs=10,
+                        epochs=100,
                         batch_size=512,
-                        validation_data=(x_val, y_val))
+                        validation_data=(x_val, y_val),
+                        callbacks=[checkpoint_callback])
 
-    # loss = history.history["loss"]
-    # val_loss = history.history["val_loss"]
-    # epochs = range(1, len(loss) + 1)
-    # plt.plot(epochs, loss, "bo", label="Потери на этапе обучения")
-    # plt.plot(epochs, val_loss, "b", label="Потери на этапе проверки")
-    # plt.title("Потери на этапах обучения и проверки")
-    # plt.xlabel("Эпохи")
-    # plt.ylabel("Потери")
-    # plt.legend()
-    # plt.show()
-    #
+    loss = history.history["loss"]
+    val_loss = history.history["val_loss"]
+    epochs = range(1, len(loss) + 1)
+    plt.plot(epochs, loss, "bo", label="Потери на этапе обучения")
+    plt.plot(epochs, val_loss, "b", label="Потери на этапе проверки")
+    plt.title("Потери на этапах обучения и проверки")
+    plt.xlabel("Эпохи")
+    plt.ylabel("Потери")
+    plt.legend()
+    plt.show()
+
     # plt.clf()
     # acc = history.history["accuracy"]
     # val_acc = history.history["val_accuracy"]
@@ -499,22 +529,47 @@ def train_neural_network():
 
 def build_model():
     model = keras.Sequential([
-                          layers.Dense(516, activation="relu"),
-                          layers.Dense(516, activation="relu"),
-                          layers.Dense(255, activation="softmax")
+                          layers.Dense(2048, activation="relu"),
+        layers.Dense(1024, activation="relu"),
+        layers.Dense(1024, activation="relu"),
+                          layers.Dense(2, activation='linear')
           ])
 
-    model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["accuracy"])
+    model.compile(optimizer="adam", loss="mean_absolute_error", metrics=["mean_absolute_error"])
     return model
+
+# def schedule_lr(epoch):
+#     if epoch < 5:
+#         return 0.001
+#     elif epoch < 10:
+#         return 0.0005
+#     else:
+#         return 0.0001
+
+
+def create_schedule_lr(model):
+    def schedule_lr(epoch, lr):
+        logs = model.history.history
+        if len(logs) == 0:
+            return 0.001
+
+        val_accuracy = logs['val_accuracy'][-1]
+        if val_accuracy > 0.3 and val_accuracy < 0.35:
+            return 0.1
+        else:
+            return 0.001
+    return schedule_lr
+
 
 
 #generation_position_and_save(10000, 50)
 
 
-generation_labels()
+#generation_labels()
 
 
 #show_positions()
 
-#train_neural_network()
+
+train_neural_network()
 
