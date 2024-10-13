@@ -5,6 +5,9 @@ import copy
 from tensorflow import keras
 from tensorflow.keras import layers
 import tensorflow as tf
+from tensorflow.keras.layers import Layer
+from tensorflow.keras import backend as K
+from tensorflow.keras.layers import Input, Dense
 
 import matplotlib.pyplot as plt
 
@@ -442,7 +445,7 @@ def train_neural_network():
 
     empty_pos = []
     for i in range(len(labels)):
-        if labels[i][0] < -10 or labels[i][0] == 1:
+        if labels[i][0] < -10:
             empty_pos.append(i)
 
     labels = np.delete(labels, empty_pos, axis=0)
@@ -471,36 +474,65 @@ def train_neural_network():
     training_data = positions[indices_0]
     training_output = new_labels[indices_0]
 
-    model = build_model()
-
-
-
     x_val = training_data[:1000]
     partial_x_train = training_data[1000:]
     y_val = training_output[:1000]
     partial_y_train = training_output[1000:]
 
-    checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
-        filepath='neural_network/best_model.keras',
-        monitor='val_loss',
-        verbose=1,
-        save_best_only=True,
-        mode='min'
-    )
+    training_model, prediction_model = build_model()
 
-    #lr_scheduler = tf.keras.callbacks.LearningRateScheduler(create_schedule_lr(model)) #простой вариант
+    lr_scheduler = tf.keras.callbacks.LearningRateScheduler(create_schedule_lr(training_model)) #простой вариант
     # patience = 5  # количество эпох, которые нужно ждать перед изменением lr
     # lr_scheduler = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss ',
     #                                 patience=patience,
     #                                 factor=0.5,
     #                                 min_lr=0.001)
 
-    history = model.fit(partial_x_train,
+    #Сохранение автоматически
+    # checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+    #     filepath=r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\neural_network\best_mode_auto.keras',
+    #     monitor='val_loss',
+    #     verbose=1,
+    #     save_best_only=True,
+    #     mode='min'
+    # )
+
+    #сохранение весов
+    checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+        filepath=r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\neural_network\best_weights.weights.h5',
+        monitor='val_loss',
+        verbose=1,
+        save_best_only=True,
+        save_weights_only=True,
+        mode='min'
+    )
+
+    history = training_model.fit([partial_x_train, partial_y_train],
                         partial_y_train,
                         epochs=100,
-                        batch_size=512,
-                        validation_data=(x_val, y_val),
-                        callbacks=[checkpoint_callback])
+                        batch_size=256,
+                        validation_data=([x_val, y_val], y_val),
+                        callbacks=[checkpoint_callback, lr_scheduler])
+
+    prediction_model.load_weights(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\neural_network\best_weights.weights.h5')
+    prediction_model.save(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\neural_network\best_prediction_model.keras')
+
+    #Сохранение вручную
+    # best_model = tf.keras.models.load_model(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\neural_network\best_model_manually.keras', custom_objects={'CustomLossLayer': CustomLossLayer})
+    # best_vall_loss = best_model.validation([x_val, y_val], y_val)
+    #
+    # num_epochs = 3
+    # for epoch in range(num_epochs):
+    #     history = model.fit([partial_x_train, partial_y_train],
+    #                         partial_y_train,
+    #                         epochs=1,
+    #                         batch_size=256,
+    #                         validation_data=([x_val, y_val], y_val))
+    #
+    #     if True:#history.history["vall_loss"] < best_vall_loss:
+    #         best_vall_loss = history.history['val_loss']
+    #         model.save('neural_network/best_model_manually.keras')
+
 
     loss = history.history["loss"]
     val_loss = history.history["val_loss"]
@@ -524,19 +556,78 @@ def train_neural_network():
     # plt.legend()
     # plt.show()
 
-    return model
+
 
 
 def build_model():
-    model = keras.Sequential([
-                          layers.Dense(2048, activation="relu"),
-        layers.Dense(1024, activation="relu"),
-        layers.Dense(1024, activation="relu"),
-                          layers.Dense(2, activation='linear')
-          ])
+    # model = keras.Sequential([
+    #                       layers.Dense(2048, activation="relu"),
+    #     layers.Dense(2048, activation="relu"),
+    #     layers.Dense(1024, activation="relu"),
+    #     layers.Dense(1024, activation="relu"),
+    #                       layers.Dense(2, activation='linear')
+    #       ])
+    #model.compile(optimizer="adam", loss="mean_absolute_error", metrics=["mean_absolute_error"])
 
-    model.compile(optimizer="adam", loss="mean_absolute_error", metrics=["mean_absolute_error"])
-    return model
+    input_layer = Input(shape=(225,), name="position")
+    true_output = Input(shape=(2,), name="coords")
+
+    layer = layers.Dense(2048, activation="relu")(input_layer)
+    layer = layers.Dense(1024, activation="relu")(layer)
+    layer = layers.Dense(1024, activation="relu")(layer)
+
+    predict_output = layers.Dense(2, activation= custom_activation)(layer)
+
+    loss_layer = CustomLossLayer()([true_output, predict_output, input_layer])
+
+    training_model  = keras.models.Model(inputs=[input_layer, true_output], outputs=loss_layer)
+    training_model .compile(optimizer='adam')
+
+    prediction_model = keras.models.Model(inputs=input_layer, outputs=predict_output)
+
+    return training_model, prediction_model
+
+def custom_activation(x):
+    return tf.sigmoid(x) * 15
+
+class CustomLossLayer(Layer):
+    def __init__(self, **kwargs):
+        super(CustomLossLayer, self).__init__(**kwargs)
+
+    def call(self, inputs):
+        y_true, y_pred, positions = inputs
+
+        batch_size = tf.shape(positions)[0]
+        board_width = 15
+
+        base_loss = tf.reduce_mean(tf.square(y_pred - y_true), axis=-1)
+
+        pred_x = tf.cast(y_pred[:, 0], tf.int32)
+        pred_y = tf.cast(y_pred[:, 1], tf.int32)
+
+        pred_index = pred_y * board_width + pred_x
+
+        batch_indices = tf.range(batch_size, dtype=tf.int32)
+        gather_indices = tf.stack([batch_indices, pred_index], axis=1)
+
+        pred_occupancy = tf.gather_nd(positions, gather_indices)
+
+        overlap_penalty = tf.cast(pred_occupancy != 0, tf.float32)
+
+        total_loss = base_loss * overlap_penalty + base_loss
+
+        self.add_loss(total_loss)
+
+        return y_pred
+
+    def get_config(self):
+        config = super(CustomLossLayer, self).get_config()
+        return config
+
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)
+
 
 # def schedule_lr(epoch):
 #     if epoch < 5:
@@ -546,19 +637,19 @@ def build_model():
 #     else:
 #         return 0.0001
 
-
 def create_schedule_lr(model):
     def schedule_lr(epoch, lr):
         logs = model.history.history
         if len(logs) == 0:
             return 0.001
 
-        val_accuracy = logs['val_accuracy'][-1]
-        if val_accuracy > 0.3 and val_accuracy < 0.35:
+        val_accuracy = logs['val_loss'][-1]
+        if val_accuracy > 0.3 and val_accuracy < 0.35 and False:
             return 0.1
         else:
-            return 0.001
+            return 0.0001
     return schedule_lr
+
 
 
 

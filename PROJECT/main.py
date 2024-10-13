@@ -24,7 +24,7 @@ def main():
     len_board = 15
     play_neural_network = True
     if play_neural_network:
-        model = keras.models.load_model(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\neural_network\best_model.keras')
+        model = tf.keras.models.load_model(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\neural_network\best_prediction_model.keras', custom_objects={'CustomLossLayer': CustomLossLayer, 'custom_activation': custom_activation})
 
     possible_moves_white_pl = typed.Dict.empty(
         key_type=types.UniTuple(types.int64, 2),
@@ -70,6 +70,7 @@ def main():
 
                     not_round_coord_best_move = model.predict(position)[0]
                     coord_best_move = (round(not_round_coord_best_move[0]), round(not_round_coord_best_move[1]))
+                    print(coord_best_move, not_round_coord_best_move)
 
                     game_graphics.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
                     board_player.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
