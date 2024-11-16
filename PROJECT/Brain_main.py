@@ -117,7 +117,7 @@ class Board:
 
 
 
-@njit(cache=True)
+@njit(cache=False)
 def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPlayer, alpha=float('-inf'), beta=float('inf'), count_variants=0):
 
     if board_condition.check_colors_win() != 0:
@@ -127,8 +127,6 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
         wh_line = board_condition.now_all_line_whiteplayer
         all_coord = board_condition.now_coord_all_move_and_color
         return (find_position_score(bl_line, wh_line, all_coord), (-1,-1), count_variants)
-    if count_variants >= 20000:
-        return (0, (-1, -1), count_variants)
 
     if maximizingPlayer:
         value = float('-inf')
@@ -145,10 +143,8 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
             count_variants += 1
             #print("#@%", count_variants)
             next_variants_move_and_motion = (move, create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
-            tmp, _, count_variants = minimax(child, depth - 1 + change_depth, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
+            tmp, _, count_variants = minimax(child, depth*change_depth-1, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
 
-            if count_variants >= 20000:
-                break
 
             if tmp > value:
                 value = tmp
@@ -174,10 +170,8 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
             count_variants += 1
             #print("#@%", count_variants)
             next_variants_move_and_motion = (move, create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
-            tmp, _, count_variants = minimax(child, depth - 1 + change_depth, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
+            tmp, _, count_variants = minimax(child, depth*change_depth-1, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
 
-            if count_variants >= 20000:
-                break
 
             if tmp < value:
                 value = tmp
@@ -191,12 +185,12 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
 
 
 
-@njit(cache=True)
+@njit(cache=False)
 def new_generator_motion(new_coord_motion, now_coord_all_move_and_color, dict_with_variants_for_player, dict_with_variants_for_enemy, color_enemy):
     if new_coord_motion == (-1,-1):
         return dict_with_variants_for_player, dict_with_variants_for_enemy
     cell_qty = 14
-    coefficent = [20, 10, 7, 3, 1]
+    coefficent = [0.1, 0.4, 0.6, 0.7, 0.9]
     template_chip = np.array([-1, -1, -1], dtype=np.int8)
     if dict_with_variants_for_enemy.get(new_coord_motion) is not None:
         dict_with_variants_for_enemy.pop(new_coord_motion)
@@ -228,20 +222,20 @@ def new_generator_motion(new_coord_motion, now_coord_all_move_and_color, dict_wi
             if dict_with_variants_for_enemy.get(chip) is not None:
                 if count_chip_enemy >= 2:
                     if dict_with_variants_for_enemy.get(chip) == coefficent[1]:
-                        dict_with_variants_for_enemy[chip] = -coefficent[2]
+                        dict_with_variants_for_enemy[chip] = coefficent[2]
                         dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
             else:
                 if count_chip_enemy == 1:
-                    dict_with_variants_for_enemy[chip] = -coefficent[0]
-                    dict_with_variants_for_player[chip] = -coefficent[0]
+                    dict_with_variants_for_enemy[chip] = coefficent[0]
+                    dict_with_variants_for_player[chip] = coefficent[0]
                 if count_chip_enemy == 2:
-                    dict_with_variants_for_enemy[chip] = -coefficent[1]
+                    dict_with_variants_for_enemy[chip] = coefficent[1]
                 if count_chip_enemy == 3:
-                    dict_with_variants_for_enemy[chip] = -coefficent[3]
-                    dict_with_variants_for_player[chip] = -coefficent[3]
+                    dict_with_variants_for_enemy[chip] = coefficent[3]
+                    dict_with_variants_for_player[chip] = coefficent[3]
                 if count_chip_enemy > 3:
-                    dict_with_variants_for_enemy[chip] = -coefficent[4]
-                    dict_with_variants_for_player[chip] = -coefficent[4]
+                    dict_with_variants_for_enemy[chip] = coefficent[4]
+                    dict_with_variants_for_player[chip] = coefficent[4]
 
     #Анализ диагональных линий
     for flag in (0,1):
@@ -279,23 +273,23 @@ def new_generator_motion(new_coord_motion, now_coord_all_move_and_color, dict_wi
             if dict_with_variants_for_enemy.get(chip) is not None:
                 if count_chip_enemy >= 2:
                     if dict_with_variants_for_enemy.get(chip) == coefficent[1]:
-                        dict_with_variants_for_enemy[chip] = -coefficent[2]
+                        dict_with_variants_for_enemy[chip] = coefficent[2]
                         dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
             else:
                 if count_chip_enemy == 1:
-                    dict_with_variants_for_enemy[chip] = -coefficent[0]
-                    dict_with_variants_for_player[chip] = -coefficent[0]
+                    dict_with_variants_for_enemy[chip] = coefficent[0]
+                    dict_with_variants_for_player[chip] = coefficent[0]
                 if count_chip_enemy == 2:
-                    dict_with_variants_for_enemy[chip] = -coefficent[1]
+                    dict_with_variants_for_enemy[chip] = coefficent[1]
                 if count_chip_enemy == 3:
-                    dict_with_variants_for_enemy[chip] = -coefficent[3]
-                    dict_with_variants_for_player[chip] = -coefficent[3]
+                    dict_with_variants_for_enemy[chip] = coefficent[3]
+                    dict_with_variants_for_player[chip] = coefficent[3]
                 if count_chip_enemy > 3:
-                    dict_with_variants_for_enemy[chip] = -coefficent[4]
-                    dict_with_variants_for_player[chip] = -coefficent[4]
+                    dict_with_variants_for_enemy[chip] = coefficent[4]
+                    dict_with_variants_for_player[chip] = coefficent[4]
 
     return dict_with_variants_for_player, dict_with_variants_for_enemy
-@njit(cache=True)
+@njit(cache=False)
 def find_start_line(x, y, flag):
     cell_qty = 14
     if flag == 0:
@@ -346,7 +340,7 @@ def silly_P_generator_motion(now_coord_all_move_and_color):
     return sgen_motion
 
 
-@njit(cache=True)
+@njit(cache=False)
 def check_line_isolated(our_check_line, now_coord_all_move_and_color):
 
     x_progressive = our_check_line[1][0] - our_check_line[0][0]
@@ -366,7 +360,7 @@ def check_line_isolated(our_check_line, now_coord_all_move_and_color):
         else:
             return 0
 
-@njit(cache=True)
+@njit(cache=False)
 def find_position_score(now_all_line_blackplayer, now_all_line_whiteplayer, now_coord_all_move_and_color):
     pos_score = 0
     for line in now_all_line_whiteplayer:
@@ -415,7 +409,7 @@ def find_position_score(now_all_line_blackplayer, now_all_line_whiteplayer, now_
     return pos_score
 
 
-@njit(cache=True)
+@njit(cache=False)
 def dynamic_score_positions(all_line):
     dynamic_score = 0
     for line in all_line:

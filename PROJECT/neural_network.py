@@ -466,9 +466,7 @@ def train_neural_network():
     for i in range(len(labels)):
         l = np.where(labels[i] == max(labels[i]))[0][0]
         coord_best_move = (l - (l // 15) * 15, l // 15)
-        new_labels[i][0], new_labels[i][0] = coord_best_move
-
-
+        new_labels[i][0], new_labels[i][1] = coord_best_move
 
     indices_0 = np.random.permutation(positions.shape[0])
     training_data = positions[indices_0]
@@ -573,8 +571,8 @@ def build_model():
     true_output = Input(shape=(2,), name="coords")
 
     layer = layers.Dense(2048, activation="relu")(input_layer)
-    layer = layers.Dense(1024, activation="relu")(layer)
-    layer = layers.Dense(1024, activation="relu")(layer)
+    #layer = layers.Dense(1024, activation="relu")(layer)
+    #layer = layers.Dense(1024, activation="relu")(layer)
 
     predict_output = layers.Dense(2, activation= custom_activation)(layer)
 
@@ -614,7 +612,7 @@ class CustomLossLayer(Layer):
 
         overlap_penalty = tf.cast(pred_occupancy != 0, tf.float32)
 
-        total_loss = base_loss * overlap_penalty + base_loss
+        total_loss = base_loss * overlap_penalty * 4 + base_loss
 
         self.add_loss(total_loss)
 
@@ -647,7 +645,7 @@ def create_schedule_lr(model):
         if val_accuracy > 0.3 and val_accuracy < 0.35 and False:
             return 0.1
         else:
-            return 0.0001
+            return 0.001
     return schedule_lr
 
 
@@ -662,5 +660,5 @@ def create_schedule_lr(model):
 #show_positions()
 
 
-train_neural_network()
+#train_neural_network()
 
