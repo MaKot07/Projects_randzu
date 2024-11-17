@@ -1,4 +1,6 @@
 import sys
+import time
+
 from Graphics.Graphics_main import *
 from PROJECT.Brain_main import *
 from neural_network import *
@@ -28,18 +30,20 @@ def main():
         model = tf.keras.models.load_model(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\neural_network\best_prediction_model.keras', custom_objects={'CustomLossLayer': CustomLossLayer, 'custom_activation': custom_activation})
 
     possible_moves_white_pl = typed.Dict.empty(
-        key_type=types.UniTuple(types.int8, 2),
-        value_type=numba.types.float32
+        key_type=types.UniTuple(types.int64, 2),
+        value_type=numba.types.float64
     )
     possible_moves_black_pl = typed.Dict.empty(
-        key_type=types.UniTuple(types.int8, 2),
-        value_type=numba.types.float32
+        key_type=types.UniTuple(types.int64, 2),
+        value_type=numba.types.float64
     )
 
     game_graphics = Game_Graphics(number_of_movies)
     game_graphics.draw_all_game(win_color)
 
     main_board = Board(color_user)
+
+    #for_otladka = [[], [], [], [], []]
 
     if color_computer == white:
         comp_move = False
@@ -108,8 +112,12 @@ def main():
                     possible_moves_white_pl.pop((index_x_rect, index_y_rect))
                 next_variants_move_and_motion = ( (index_x_rect, index_y_rect),create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
 
+
+                # for_otladka[3].append(convert_to_regular_dict(possible_moves_black_pl))
+                # for_otladka[4].append(convert_to_regular_dict(possible_moves_white_pl))
+
                 maxim = True if color_computer == white else False
-                best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 25, next_variants_move_and_motion, maxim, float('-inf'), float('inf'), 0)
+                best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 20, next_variants_move_and_motion, maxim, float('-inf'), float('inf'), 0)
 
                 print("3#@#", count_all_variants, find_position_score(main_board.give_all_line_blackplayer(), main_board.give_all_line_whiteplayer(), main_board.give_chips()))
 
@@ -132,6 +140,7 @@ def main():
         else:
             if event != None:
                 if event.type == pygame.QUIT:
+                    #return for_otladka
                     sys.exit()
 
                 if event.button == 1:
@@ -169,8 +178,9 @@ def main():
         game_graphics.draw_all_game(win_color)
 
 
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    main()
+
 
 
 def otladka():
@@ -180,14 +190,70 @@ def otladka():
 
 
     with open(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\OTLADKA\otladka.csv', 'rb') as file:
-        a = []
+        history = []
         while True:
             try:
-                a.append(pickle.load(file))
+                history.append(pickle.load(file))
             except EOFError:
                 break
 
-    print(a[0])
+    b_line_history = history[0][0]
+    w_line_history = history[0][1]
+    position_history = history[0][2]
+    move_bl_pl_history = history[0][3]
+    move_wh_pl_history = history[0][4]
+
+    Visual_board = Game_Graphics(0)
+    Visual_board.draw_all_game(0)
 
 
-otladka()
+    i = 13
+    while True:
+        event = now_event()
+
+        if event != None:
+            if event.type == pygame.QUIT:
+                sys.exit()
+
+            if event.button == 1:
+                if i%2 == 0:
+                    print("W", move_wh_pl_history[i//2])
+                    print("B", move_bl_pl_history[i//2])
+
+                    now_board = Board(white, b_line_history[i], w_line_history[i], position_history[i])
+
+                    next_variants_move_and_motion = (
+                        (position_history[i][-1][0], position_history[i][-1][1]), create_independent_dict(convert_to_numba_dict(move_bl_pl_history[i//2])),
+                    create_independent_dict(convert_to_numba_dict(move_wh_pl_history[i//2])))
+
+                    best_value, coord_best_move, count_all_variants = minimax(now_board, 25,
+                                                                              next_variants_move_and_motion, True,
+                                                                              float('-inf'), float('inf'), 0)
+                    print(coord_best_move)
+
+
+                Visual_board = Game_Graphics(i, position_history[i])
+                Visual_board.draw_all_game(0)
+                #time.sleep(1)
+
+                i +=1
+                if i == len(position_history):
+                    sys.exit()
+
+def convert_to_regular_dict(numba_dict):
+    regular_dict = {}
+    for key in numba_dict.keys():
+        regular_dict[(key[0], key[1])] = numba_dict[key]
+    return regular_dict
+
+def convert_to_numba_dict(dict):
+    regular_dict = typed.Dict.empty(
+        key_type=types.UniTuple(types.int64, 2),
+        value_type=numba.types.float64
+    )
+    for key in dict.keys():
+        regular_dict[(key[0], key[1])] = dict[key]
+    return regular_dict
+
+
+#otladka()

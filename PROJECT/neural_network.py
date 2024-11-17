@@ -206,7 +206,6 @@ def show_positions():
 
         if event != None:
             if event.type == pygame.QUIT:
-                run = False
                 sys.exit()
 
             if event.button == 1:

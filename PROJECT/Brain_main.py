@@ -138,6 +138,7 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
                 return (tmp, move, count_variants)
 
         for move, change_depth in possible_moves_white_pl.items():
+
             child = board_condition.get_new_state(move, black)
 
             count_variants += 1
@@ -158,7 +159,7 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
         value = float('inf')
         possible_moves_black_pl, possible_moves_white_pl = new_generator_motion(last_variants_move_and_motion[0], board_condition.now_coord_all_move_and_color, create_independent_dict(last_variants_move_and_motion[1]), create_independent_dict(last_variants_move_and_motion[2]), white)
 
-        for move, change_depth in possible_moves_white_pl.items():
+        for move, change_depth in possible_moves_black_pl.items():
             child = board_condition.get_new_state(move, white)
             tmp, _, count_variants = minimax(child, 0, last_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
             if tmp <= -1000000:
@@ -190,7 +191,7 @@ def new_generator_motion(new_coord_motion, now_coord_all_move_and_color, dict_wi
     if new_coord_motion == (-1,-1):
         return dict_with_variants_for_player, dict_with_variants_for_enemy
     cell_qty = 14
-    coefficent = [0.1, 0.4, 0.6, 0.7, 0.9]
+    coefficent = [0.1, 0.6, 0.1, 0.8]
     template_chip = np.array([-1, -1, -1], dtype=np.int8)
     if dict_with_variants_for_enemy.get(new_coord_motion) is not None:
         dict_with_variants_for_enemy.pop(new_coord_motion)
@@ -221,21 +222,20 @@ def new_generator_motion(new_coord_motion, now_coord_all_move_and_color, dict_wi
         for chip in list_with_sgen_chip_for_enemy:
             if dict_with_variants_for_enemy.get(chip) is not None:
                 if count_chip_enemy >= 2:
-                    if dict_with_variants_for_enemy.get(chip) == coefficent[1]:
-                        dict_with_variants_for_enemy[chip] = coefficent[2]
-                        dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
+                    dict_with_variants_for_enemy[chip] += coefficent[2]
+                    dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
             else:
                 if count_chip_enemy == 1:
                     dict_with_variants_for_enemy[chip] = coefficent[0]
                     dict_with_variants_for_player[chip] = coefficent[0]
                 if count_chip_enemy == 2:
                     dict_with_variants_for_enemy[chip] = coefficent[1]
-                if count_chip_enemy == 3:
+                if count_chip_enemy >= 3:
                     dict_with_variants_for_enemy[chip] = coefficent[3]
                     dict_with_variants_for_player[chip] = coefficent[3]
-                if count_chip_enemy > 3:
-                    dict_with_variants_for_enemy[chip] = coefficent[4]
-                    dict_with_variants_for_player[chip] = coefficent[4]
+                # if count_chip_enemy > 3:
+                #     dict_with_variants_for_enemy[chip] = coefficent[4]
+                #     dict_with_variants_for_player[chip] = coefficent[4]
 
     #Анализ диагональных линий
     for flag in (0,1):
@@ -272,21 +272,20 @@ def new_generator_motion(new_coord_motion, now_coord_all_move_and_color, dict_wi
         for chip in list_with_sgen_chip_for_enemy:
             if dict_with_variants_for_enemy.get(chip) is not None:
                 if count_chip_enemy >= 2:
-                    if dict_with_variants_for_enemy.get(chip) == coefficent[1]:
-                        dict_with_variants_for_enemy[chip] = coefficent[2]
-                        dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
+                    dict_with_variants_for_enemy[chip] += coefficent[2]
+                    dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
             else:
                 if count_chip_enemy == 1:
                     dict_with_variants_for_enemy[chip] = coefficent[0]
                     dict_with_variants_for_player[chip] = coefficent[0]
                 if count_chip_enemy == 2:
                     dict_with_variants_for_enemy[chip] = coefficent[1]
-                if count_chip_enemy == 3:
+                if count_chip_enemy >= 3:
                     dict_with_variants_for_enemy[chip] = coefficent[3]
                     dict_with_variants_for_player[chip] = coefficent[3]
-                if count_chip_enemy > 3:
-                    dict_with_variants_for_enemy[chip] = coefficent[4]
-                    dict_with_variants_for_player[chip] = coefficent[4]
+                # if count_chip_enemy > 3:
+                #     dict_with_variants_for_enemy[chip] = coefficent[4]
+                #     dict_with_variants_for_player[chip] = coefficent[4]
 
     return dict_with_variants_for_player, dict_with_variants_for_enemy
 @njit(cache=False)
