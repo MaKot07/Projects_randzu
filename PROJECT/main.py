@@ -112,7 +112,6 @@ def main():
                     possible_moves_white_pl.pop((index_x_rect, index_y_rect))
                 next_variants_move_and_motion = ( (index_x_rect, index_y_rect),create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
 
-
                 # for_otladka[3].append(convert_to_regular_dict(possible_moves_black_pl))
                 # for_otladka[4].append(convert_to_regular_dict(possible_moves_white_pl))
 

@@ -193,7 +193,7 @@ def new_generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_col
     if new_coord_motion == (-1,-1):
         return dict_with_variants_for_player, dict_with_variants_for_enemy
     cell_qty = 14
-    coefficent = [0.1, 0.3, 0.1, 0.7]
+    coefficent = [0.1, 0.2, 0.1, 0.6]
     template_chip = np.array([-1, -1, -1], dtype=np.int8)
     if dict_with_variants_for_enemy.get(new_coord_motion) is not None:
         dict_with_variants_for_enemy.pop(new_coord_motion)
@@ -223,8 +223,11 @@ def new_generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_col
 
         for chip in list_with_sgen_chip_for_enemy:
             if dict_with_variants_for_enemy.get(chip) is not None:
-                if count_chip_enemy >= 2 and dict_with_variants_for_enemy.get(chip) < 0.9:
+                if count_chip_enemy == 2 and dict_with_variants_for_enemy.get(chip) < 0.9:
                     dict_with_variants_for_enemy[chip] += coefficent[2]
+                    dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
+                if count_chip_enemy >= 3 and dict_with_variants_for_enemy.get(chip) < 0.9:
+                    dict_with_variants_for_enemy[chip] = coefficent[3] + 0.1
                     dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
             else:
                 if count_chip_enemy == 1:
@@ -273,8 +276,11 @@ def new_generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_col
 
         for chip in list_with_sgen_chip_for_enemy:
             if dict_with_variants_for_enemy.get(chip) is not None:
-                if count_chip_enemy >= 2 and dict_with_variants_for_enemy.get(chip) < 0.9:
+                if count_chip_enemy == 2 and dict_with_variants_for_enemy.get(chip) < 0.9:
                     dict_with_variants_for_enemy[chip] += coefficent[2]
+                    dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
+                if count_chip_enemy >= 3 and dict_with_variants_for_enemy.get(chip) < 0.9:
+                    dict_with_variants_for_enemy[chip] = coefficent[3] + 0.1
                     dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
             else:
                 if count_chip_enemy == 1:
