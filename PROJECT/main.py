@@ -117,14 +117,19 @@ def main():
                 # for_otladka[4].append(convert_to_regular_dict(possible_moves_white_pl))
 
                 maxim = True if color_computer == white else False
-                best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 20, next_variants_move_and_motion, maxim, float('-inf'), float('inf'), 0)
+                best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 15, next_variants_move_and_motion, maxim, float('-inf'), float('inf'), 0)
 
-                print("3#@#", count_all_variants, find_position_score(main_board.give_all_line_blackplayer(), main_board.give_all_line_whiteplayer(), main_board.give_chips()))
+                possible_moves_white_pl, possible_moves_black_pl = new_generator_motion_for_minmax(
+                    next_variants_move_and_motion[0], main_board.give_chips(),
+                    create_independent_dict(next_variants_move_and_motion[2]),
+                    create_independent_dict(next_variants_move_and_motion[1]), black)
+
+                print("3#@#", count_all_variants,best_value, find_position_score(main_board.give_all_line_blackplayer(), main_board.give_all_line_whiteplayer(), main_board.give_chips()))
 
                 game_graphics.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
                 main_board.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
 
-                possible_moves_black_pl, possible_moves_white_pl = new_generator_motion(coord_best_move, main_board.give_chips(), create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl), white)
+                possible_moves_black_pl, possible_moves_white_pl = new_generator_motion_for_minmax(coord_best_move, main_board.give_chips(), create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl), white)
 
                 game_graphics.set_number_move()
 

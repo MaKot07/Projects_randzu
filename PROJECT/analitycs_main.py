@@ -12,7 +12,7 @@ cell_size_ramka = 42
 
 
 
-@njit(cache=False)
+@njit(cache=True)
 def adding_lines(index_x_rect, index_y_rect, color_player, player_lines_array, now_coord_all_move_and_color):
     array_with_coord = np.array([index_x_rect, index_y_rect], dtype=np.int8)
     player_lines = in_list_all_lines(player_lines_array)
@@ -71,7 +71,7 @@ def adding_lines(index_x_rect, index_y_rect, color_player, player_lines_array, n
 
 
 
-@njit(cache=False)
+@njit(cache=True)
 def find_near_chips(x, y, need_color, coord_all_move_and_color):
     near_chips = []
     chip = np.array([0, 0, need_color])
@@ -89,7 +89,7 @@ def find_near_chips(x, y, need_color, coord_all_move_and_color):
 
     return np.array(near_chips, dtype=np.int8), True
 
-@njit(cache=False)
+@njit(cache=True)
 def find_need_line(coords_chip, now_all_line_player, near_chips):
     list_without_len_1 = []
     list_with_len_1 = []
@@ -122,7 +122,7 @@ def find_need_line(coords_chip, now_all_line_player, near_chips):
         result_list.append(arr)
     return result_list
 
-@njit(cache=False)
+@njit(cache=True)
 def check_connect_lines(coord_chip, line_without_empty, all_line):
     add = (False, 0)
     if not (coord_chip[0] < line_without_empty[0][0] or (coord_chip[0] == line_without_empty[0][0] and coord_chip[1] < line_without_empty[0][1])):
@@ -148,7 +148,7 @@ def check_connect_lines(coord_chip, line_without_empty, all_line):
                         add = (True, index)
     return add
 
-@njit(cache=False)
+@njit(cache=True)
 def dellit_near_chips(coords_chip, new_line, connect_line, list_whith_lines):
     index_to_del = []
 
@@ -161,7 +161,7 @@ def dellit_near_chips(coords_chip, new_line, connect_line, list_whith_lines):
 
     return index_to_del
 
-@njit(cache=False)
+@njit(cache=True)
 def dellit_near_chips_without_connect(coords_chip, new_line, list_whith_lines):
     index_to_del = []
     arr_empty = np.array([-1, -1], dtype=np.int8)
@@ -181,7 +181,7 @@ def dellit_near_chips_without_connect(coords_chip, new_line, list_whith_lines):
 
     return index_to_del
 
-@njit(cache=False)
+@njit(cache=True)
 def create_line_with_connect(chip_coord, line, connect_line):
     mask = give_index_empty_in_mask(connect_line)
     new_connect_line = connect_line[~mask]
@@ -194,7 +194,7 @@ def create_line_with_connect(chip_coord, line, connect_line):
         new_line_without_empty = np.concatenate((line, chip_coord_2d, new_connect_line))
         return new_line_without_empty
 
-@njit(cache=False)
+@njit(cache=True)
 def create_line_without_connect(chip_coord, line):
     chip_coord = np.asarray(chip_coord, dtype=np.int8)
     chip_coord_2d = np.expand_dims(chip_coord, axis=0)
@@ -206,7 +206,7 @@ def create_line_without_connect(chip_coord, line):
         new_line_without_empty = np.concatenate((line, chip_coord_2d), axis=0)
         return new_line_without_empty
 
-@njit(cache=False)
+@njit(cache=True)
 def create_new_line(new_line_without_empty):
     new_line_with_empty = np.full((9, 2), -1, dtype=np.int8)
     for i, arr in enumerate(new_line_without_empty):
@@ -214,13 +214,13 @@ def create_new_line(new_line_without_empty):
     return new_line_with_empty
 
 
-@njit(cache=False)
+@njit(cache=True)
 def check_want_newgame(x_pixel, y_pixel):
     if x_pixel >= 700 and x_pixel <= 840 and y_pixel >= 180 and y_pixel < 250:
         return True
     return False
 
-@njit(cache=False)
+@njit(cache=True)
 def check_in_2D_array(check_array, check_in_array):
     if check_in_array.size == 0:
         return False
@@ -229,7 +229,7 @@ def check_in_2D_array(check_array, check_in_array):
             return True
     return False
 
-@njit(cache=False)
+@njit(cache=True)
 def check_in_2D_list(check_array, check_in_list):
     if check_in_list[0].size == 0:
         return False
@@ -238,7 +238,7 @@ def check_in_2D_list(check_array, check_in_list):
             return True
     return False
 
-@njit(cache=False)
+@njit(cache=True)
 def check_not_in_2D_list(check_array, check_in_list):
     if check_in_list[0].size == 0:
         return True
@@ -249,14 +249,14 @@ def check_not_in_2D_list(check_array, check_in_list):
 
 
 
-@njit(cache=False)
+@njit(cache=True)
 def find_index_in_2D_array(check_array, check_in_array):
     for i, sub in enumerate(check_in_array):
         if np.array_equal(sub, check_array):
             return i
     return -1
 
-@njit(cache=False)
+@njit(cache=True)
 def give_index_empty(array_with_empty):
     index_empty = []
     for index, sub in enumerate(array_with_empty):
@@ -264,7 +264,7 @@ def give_index_empty(array_with_empty):
             index_empty.append(index)
     return index_empty
 
-@njit(cache=False)
+@njit(cache=True)
 def give_index_empty_in_mask(array_with_empty):
     empty = np.array([-1, -1], dtype=np.int8)
     mask = np.zeros(array_with_empty.shape[0], dtype=np.bool_)
@@ -274,7 +274,7 @@ def give_index_empty_in_mask(array_with_empty):
 
     return mask
 
-@njit(cache=False)
+@njit(cache=True)
 def check_line(coord_chip, our_line):
     x, y = coord_chip
     min_chip = our_line[0]
@@ -299,7 +299,7 @@ def check_line(coord_chip, our_line):
                 return True
             else:
                 return False
-@njit(cache=False)
+@njit(cache=True)
 def check_draw_njit(cell_qty, now_coord_all_move_and_color):
     for x in range(cell_qty + 1):
         for y in range(cell_qty + 1):
@@ -309,7 +309,7 @@ def check_draw_njit(cell_qty, now_coord_all_move_and_color):
                 return False
     return True
 
-@njit(cache=False)
+@njit(cache=True)
 def give_len_line(line):
     lenn = 0
     empty = np.array([-1,-1], dtype=np.int8)
@@ -320,14 +320,14 @@ def give_len_line(line):
     return lenn
 
 
-@njit(cache=False)
+@njit(cache=True)
 def check_win_njit(all_line):
     for line in all_line:
         if give_len_line(line) >= 5:
             return True
     return False
 
-@njit(cache=False)
+@njit(cache=True)
 def check_motion_for_brain(x, y, now_coord_all_move_and_color):
 
     if x <= cell_qty and x >= 0 and y <= cell_qty and y >= 0:
@@ -336,21 +336,21 @@ def check_motion_for_brain(x, y, now_coord_all_move_and_color):
 
     return False
 
-@njit(cache=False)
+@njit(cache=True)
 def check_motion_for_generator(coord_chip_and_color, now_coord_all_move_and_color):
     if coord_chip_and_color[0] <= cell_qty and coord_chip_and_color[0] >= 0 and coord_chip_and_color[1] <= cell_qty and coord_chip_and_color[1] >= 0:
         if not check_in_2D_array(np.array([coord_chip_and_color[0], coord_chip_and_color[1], white], dtype=np.int8), now_coord_all_move_and_color) and not check_in_2D_array(np.array([coord_chip_and_color[0], coord_chip_and_color[1], black], dtype=np.int8), now_coord_all_move_and_color):
             return True
     return False
 
-@njit(cache=False)
+@njit(cache=True)
 def in_list_all_lines(all_lines):
     result_list = []
     for arr in all_lines:
         result_list.append(arr)
     return result_list
 
-@njit(cache=False)
+@njit(cache=True)
 def delete_by_index(arr, indices_to_delete):
 
     mask = np.ones(arr.shape[0], dtype=np.bool_)
@@ -358,7 +358,7 @@ def delete_by_index(arr, indices_to_delete):
         mask[i] = False
     return arr[mask]
 
-@njit(cache=False)
+@njit(cache=True)
 def list_in_array(list_arrays):
     result_array = np.full((len(list_arrays), 9, 2), -1, dtype=np.int8)
 
@@ -367,7 +367,7 @@ def list_in_array(list_arrays):
 
     return  result_array
 
-@njit(cache=False)
+@njit(cache=True)
 def copy_array(array):
     copy_arr = np.empty_like(array)
     for i,arr in enumerate(array):

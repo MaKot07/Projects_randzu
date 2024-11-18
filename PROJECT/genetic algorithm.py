@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-@njit(cache=False)
+@njit(cache=True)
 def minimax_for_genetic(board_condition, depth, last_variants_move_and_motion, maximizingPlayer, coeficent, alpha=float('-inf'), beta=float('inf'), count_variants=0):
     if board_condition.check_colors_win() != -1:
         return (board_condition.find_win_position_score(), (-1,-1), count_variants)
@@ -80,7 +80,7 @@ def minimax_for_genetic(board_condition, depth, last_variants_move_and_motion, m
     return value, best_movement, count_variants
 
 
-@njit(cache=False)
+@njit(cache=True)
 def new_generator_motion_for_genetic(new_coord_motion, now_coord_all_move_and_color, dict_with_variants_for_player, dict_with_variants_for_enemy, color_enemy, coeficent):
     cell_qty = 14
     template_chip = np.array([-1, -1, -1], dtype=np.int8)
