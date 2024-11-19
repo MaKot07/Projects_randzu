@@ -130,7 +130,7 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
 
     if maximizingPlayer:
         value = float('-inf')
-        possible_moves_white_pl, possible_moves_black_pl = new_generator_motion_for_minmax(last_variants_move_and_motion[0], board_condition.give_chips(), create_independent_dict(last_variants_move_and_motion[2]), create_independent_dict(last_variants_move_and_motion[1]), black)
+        possible_moves_white_pl, possible_moves_black_pl = new_generator_motion_for_minmax(last_variants_move_and_motion[0], board_condition.give_chips(), create_independent_dict(last_variants_move_and_motion[2]), create_independent_dict(last_variants_move_and_motion[1]), board_condition.now_all_line_blackplayer)
         for move, change_depth in possible_moves_white_pl.items():
             child = board_condition.get_new_state(move, black)
             tmp, _, count_variants = minimax(child, 0, last_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
@@ -146,20 +146,20 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
             next_variants_move_and_motion = (move, create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
             tmp, _, count_variants = minimax(child, depth*change_depth-1, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
 
-            if depth == 15:
-                print(move, tmp)
+            if depth == 25:
+                print(move, tmp, change_depth)
 
             if tmp > value:
                 value = tmp
                 best_movement = move
 
-            if value > beta or value == 1000000:
+            if value > beta:
                 break
             alpha = max(alpha, value)
 
     else:
         value = float('inf')
-        possible_moves_black_pl, possible_moves_white_pl = new_generator_motion_for_minmax(last_variants_move_and_motion[0], board_condition.give_chips(), create_independent_dict(last_variants_move_and_motion[1]), create_independent_dict(last_variants_move_and_motion[2]), white)
+        possible_moves_black_pl, possible_moves_white_pl = new_generator_motion_for_minmax(last_variants_move_and_motion[0], board_condition.give_chips(), create_independent_dict(last_variants_move_and_motion[1]), create_independent_dict(last_variants_move_and_motion[2]), board_condition.now_all_line_whiteplayer)
 
         for move, change_depth in possible_moves_black_pl.items():
             child = board_condition.get_new_state(move, white)
@@ -180,7 +180,7 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
                 value = tmp
                 best_movement = move
 
-            if value < alpha or value == -1000000:
+            if value < alpha:
                 break
             beta = min(beta, value)
 
@@ -188,231 +188,158 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
 
 
 
+
+# @njit(cache=True)
+# def generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_color, dict_with_variants_for_player, dict_with_variants_for_enemy, color_enemy):
+#     if new_coord_motion == (-1, -1):
+#         return dict_with_variants_for_player, dict_with_variants_for_enemy
+#
+#     cell_qty = 14
+#     coefficent = [0.1, 0.3, 0.1, 0.6]
+#     template_chip = np.array([-1, -1, -1], dtype=np.int8)
+#
+#     dict_with_variants_for_enemy.pop(new_coord_motion, None)
+#     dict_with_variants_for_player.pop(new_coord_motion, None)
+#
+#     # Анализ вертикальной и горизонтальной линий
+#     for a, b in [[0, 1], [1, 0]]:
+#         count_chip_enemy = 0
+#         list_with_sgen_chip_for_enemy = []
+#
+#         for i in range(cell_qty + 1):
+#             chip_enemy = template_chip.copy()
+#             chip_enemy[a] = new_coord_motion[a]
+#             chip_enemy[b] = i
+#             chip_enemy[2] = color_enemy
+#
+#
+#             if check_in_2D_array(chip_enemy, now_coord_all_move_and_color):
+#                 count_chip_enemy += 1
+#                 cop_b = chip_enemy[b]
+#
+#                 for j in (-1, 1):
+#                     chip_enemy[b] = cop_b + j
+#                     if check_motion_for_generator(chip_enemy, now_coord_all_move_and_color):
+#                         new_chip_list = [-1, -1]
+#                         new_chip_list[a], new_chip_list[b] = chip_enemy[a], chip_enemy[b]
+#                         new_chip = (new_chip_list[0], new_chip_list[1])
+#                         list_with_sgen_chip_for_enemy.append(new_chip)
+#
+#         for chip in list_with_sgen_chip_for_enemy:
+#
+#
+#             if count_chip_enemy == 1:
+#                 dict_with_variants_for_enemy[chip] = coefficent[0]
+#                 dict_with_variants_for_player[chip] = coefficent[0]
+#             elif count_chip_enemy == 2:
+#                 dict_with_variants_for_enemy[chip] = coefficent[1]
+#             elif count_chip_enemy >= 3:
+#                 dict_with_variants_for_enemy[chip] = coefficent[3]
+#                 dict_with_variants_for_player[chip] = coefficent[3]
+#
+#     # Анализ диагональных линий
+#     for flag in (0, 1):
+#         count_chip_enemy = 0
+#         list_with_sgen_chip_for_enemy = []
+#         chip_enemy = template_chip.copy()
+#
+#         chip_enemy[0], chip_enemy[1] = find_start_line(new_coord_motion[0], new_coord_motion[1], flag)
+#         chip_enemy[2] = color_enemy
+#
+#         for_j = [(-1, -1), (1, 1)] if flag == 0 else [(-1, 1), (1, -1)]
+#         next_x, next_y = (1, 1) if flag == 0 else (-1, 1)
+#
+#         while 0 <= chip_enemy[0] <= cell_qty and 0 <= chip_enemy[1] <= cell_qty:
+#             cop_for_j1, cop_for_j2 = chip_enemy[0], chip_enemy[1]
+#
+#             if check_in_2D_array(chip_enemy, now_coord_all_move_and_color):
+#                 count_chip_enemy += 1
+#                 for j1, j2 in for_j:
+#                     chip_enemy[0], chip_enemy[1] = cop_for_j1 + j1, cop_for_j2 + j2
+#                     if check_motion_for_brain(chip_enemy, now_coord_all_move_and_color):
+#                         new_chip = (chip_enemy[0], chip_enemy[1])
+#                         list_with_sgen_chip_for_enemy.append(new_chip)
+#
+#             chip_enemy[0] = cop_for_j1 + next_x
+#             chip_enemy[1] = cop_for_j2 + next_y
+#
+#         for chip in list_with_sgen_chip_for_enemy:
+#
+#             if count_chip_enemy == 1:
+#                 dict_with_variants_for_enemy[chip] = coefficent[0]
+#                 dict_with_variants_for_player[chip] = coefficent[0]
+#             elif count_chip_enemy == 2:
+#                 dict_with_variants_for_enemy[chip] = coefficent[1]
+#             elif count_chip_enemy >= 3:
+#                 dict_with_variants_for_enemy[chip] = coefficent[3]
+#                 dict_with_variants_for_player[chip] = coefficent[3]
+#
+#     return dict_with_variants_for_player, dict_with_variants_for_enemy
+#
+#
+# @njit(cache=True)
+# def find_start_line(x, y, flag):
+#     cell_qty = 14
+#     if flag == 0:
+#         x1, y1 = x, y
+#         while x1 != 0 and y1 != 0:
+#             x1 -= 1
+#             y1 -= 1
+#         return x1, y1
+#     else:
+#         x2, y2 = x, y
+#         while x2 != cell_qty and y2 != 0:
+#             x2 += 1
+#             y2 -= 1
+#         return x2, y2
+
+
 @njit(cache=True)
-def new_generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_color, dict_with_variants_for_player, dict_with_variants_for_enemy, color_enemy):
-    if new_coord_motion == (-1,-1):
+def new_generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_color, dict_with_variants_for_player, dict_with_variants_for_enemy, line_enemy):
+    if new_coord_motion == (-1, -1):
         return dict_with_variants_for_player, dict_with_variants_for_enemy
+
     cell_qty = 14
-    coefficent = [0.1, 0.2, 0.1, 0.6]
+    coefficent = [0.1, 0.3, 0.1, 0.6]
     template_chip = np.array([-1, -1, -1], dtype=np.int8)
-    if dict_with_variants_for_enemy.get(new_coord_motion) is not None:
-        dict_with_variants_for_enemy.pop(new_coord_motion)
-    if dict_with_variants_for_player.get(new_coord_motion) is not None:
-        dict_with_variants_for_player.pop(new_coord_motion)
 
-    #Анализ вертикальной линии и горизоньальной
-    for a,b in [[0,1], [1,0]]:
-        count_chip_enemy = 0
-        list_with_sgen_chip_for_enemy = []
-        for i in range(cell_qty+1):
+    dict_with_variants_for_enemy.pop(new_coord_motion, None)
+    dict_with_variants_for_player.pop(new_coord_motion, None)
 
-            chip_enemy = template_chip.copy()
-            chip_enemy[a] = new_coord_motion[a]
-            chip_enemy[b] = i
-            chip_enemy[2] = color_enemy
-            if check_in_2D_array(chip_enemy, now_coord_all_move_and_color):
-                count_chip_enemy += 1
-                cop_b = chip_enemy[b]
-                for j in (-1, 1):
-                    chip_enemy[b] = cop_b + j
-                    if check_motion_for_generator(chip_enemy, now_coord_all_move_and_color):
-                        new_chip_list = [-1, -1]
-                        new_chip_list[a], new_chip_list[b] = chip_enemy[a], chip_enemy[b]
-                        new_chip = (new_chip_list[0], new_chip_list[1])
-                        list_with_sgen_chip_for_enemy.append(new_chip)
+    new_coord_motion = np.array(new_coord_motion)
+    for line in line_enemy:
+        if check_in_2D_array(new_coord_motion, line):
+            empty = np.array([-1, -1], dtype=np.int8)
+            if np.array_equal(line[1], empty):
+                for i in range(-1, 2):
+                    for j in range(-1, 2):
+                        if i == 0 and j == 0:
+                            continue
+                        chip = (new_coord_motion[0] + i, new_coord_motion[1] + j)
+                        if chip not in dict_with_variants_for_enemy and check_motion_for_brain(chip[0], chip[1], now_coord_all_move_and_color):
+                            dict_with_variants_for_enemy[chip] = coefficent[0]
+                            dict_with_variants_for_player[chip] = coefficent[0]
+                continue
 
-        for chip in list_with_sgen_chip_for_enemy:
-            if dict_with_variants_for_enemy.get(chip) is not None:
-                if count_chip_enemy == 2 and dict_with_variants_for_enemy.get(chip) < 0.9:
-                    dict_with_variants_for_enemy[chip] += coefficent[2]
-                    dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
-                if count_chip_enemy >= 3 and dict_with_variants_for_enemy.get(chip) < 0.9:
-                    dict_with_variants_for_enemy[chip] = coefficent[3] + 0.1
-                    dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
-            else:
-                if count_chip_enemy == 1:
-                    dict_with_variants_for_enemy[chip] = coefficent[0]
-                    dict_with_variants_for_player[chip] = coefficent[0]
-                if count_chip_enemy == 2:
-                    dict_with_variants_for_enemy[chip] = coefficent[1]
-                if count_chip_enemy >= 3:
-                    dict_with_variants_for_enemy[chip] = coefficent[3]
-                    dict_with_variants_for_player[chip] = coefficent[3]
-                # if count_chip_enemy > 3:
-                #     dict_with_variants_for_enemy[chip] = coefficent[4]
-                #     dict_with_variants_for_player[chip] = coefficent[4]
+            line_length = give_len_line(line)
+            x_progressive = line[1][0] - line[0][0]
+            y_progressive = line[1][1] - line[0][1]
 
-    #Анализ диагональных линий
-    for flag in (0,1):
-        count_chip_enemy = 0
-        list_with_sgen_chip_for_enemy = []
+            coord_new_max = (
+            x_progressive + line[line_length-1][0], y_progressive + line[line_length-1][1])
+            coord_new_min = (line[0][0] - x_progressive, line[0][1] - y_progressive)
 
-        chip_enemy = template_chip.copy()
-
-        chip_enemy[0], chip_enemy[1] = find_start_line(new_coord_motion[0], new_coord_motion[1], flag)
-        chip_enemy[2] = color_enemy
-        if flag == 0:
-            for_j = [(-1, -1), (1, 1)]
-            next_x = 1
-            next_y = 1
-        else:
-            for_j = [(-1, 1), (1, -1)]
-            next_x = -1
-            next_y = 1
-
-        while chip_enemy[0] <= cell_qty and chip_enemy[0] >= 0 and chip_enemy[1] <= cell_qty:
-            cop_for_j1, cop_for_j2 = chip_enemy[0], chip_enemy[1]
-
-            if check_in_2D_array(chip_enemy, now_coord_all_move_and_color):
-                count_chip_enemy += 1
-                for j1, j2 in for_j:
-                    chip_enemy[0], chip_enemy[1] = cop_for_j1 + j1, cop_for_j2 + j2
-                    if check_motion_for_generator(chip_enemy, now_coord_all_move_and_color):
-                        new_chip = (chip_enemy[0], chip_enemy[1])
-                        list_with_sgen_chip_for_enemy.append(new_chip)
-
-            chip_enemy[0] = cop_for_j1 + next_x
-            chip_enemy[1] = cop_for_j2 + next_y
-
-        for chip in list_with_sgen_chip_for_enemy:
-            if dict_with_variants_for_enemy.get(chip) is not None:
-                if count_chip_enemy == 2 and dict_with_variants_for_enemy.get(chip) < 0.9:
-                    dict_with_variants_for_enemy[chip] += coefficent[2]
-                    dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
-                if count_chip_enemy >= 3 and dict_with_variants_for_enemy.get(chip) < 0.9:
-                    dict_with_variants_for_enemy[chip] = coefficent[3] + 0.1
-                    dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
-            else:
-                if count_chip_enemy == 1:
-                    dict_with_variants_for_enemy[chip] = coefficent[0]
-                    dict_with_variants_for_player[chip] = coefficent[0]
-                if count_chip_enemy == 2:
-                    dict_with_variants_for_enemy[chip] = coefficent[1]
-                if count_chip_enemy >= 3:
-                    dict_with_variants_for_enemy[chip] = coefficent[3]
-                    dict_with_variants_for_player[chip] = coefficent[3]
-                # if count_chip_enemy > 3:
-                #     dict_with_variants_for_enemy[chip] = coefficent[4]
-                #     dict_with_variants_for_player[chip] = coefficent[4]
+            for coord in [coord_new_max, coord_new_min]:
+                if check_motion_for_brain(coord[0], coord[1], now_coord_all_move_and_color):
+                    if line_length == 2:
+                        dict_with_variants_for_enemy[coord] = coefficent[1]
+                    elif line_length >= 3:
+                        dict_with_variants_for_enemy[coord] = coefficent[3]
+                        dict_with_variants_for_player[coord] = coefficent[3]
 
     return dict_with_variants_for_player, dict_with_variants_for_enemy
 
 
-@njit(cache=True)
-def new_generator_motion_for_mainboard(now_coord_all_move_and_color, dict_with_variants_for_player, dict_with_variants_for_enemy, color_enemy):
-    cell_qty = 14
-    coefficent = [0.1, 0.3, 0.1, 0.8]
-    template_chip = np.array([-1, -1, -1], dtype=np.int8)
-
-    all_coords = []
-    for coord in now_coord_all_move_and_color:
-        if coord[2] == color_enemy:
-            all_coords.append((coord[0], coord[1]))
-
-    for new_coord_motion in all_coords:
-        #Анализ вертикальной линии и горизоньальной
-        for a,b in [[0,1], [1,0]]:
-            count_chip_enemy = 0
-            list_with_sgen_chip_for_enemy = []
-            for i in range(cell_qty+1):
-
-                chip_enemy = template_chip.copy()
-                chip_enemy[a] = new_coord_motion[a]
-                chip_enemy[b] = i
-                chip_enemy[2] = color_enemy
-                if check_in_2D_array(chip_enemy, now_coord_all_move_and_color):
-                    count_chip_enemy += 1
-                    cop_b = chip_enemy[b]
-                    for j in (-1, 1):
-                        chip_enemy[b] = cop_b + j
-                        if check_motion_for_generator(chip_enemy, now_coord_all_move_and_color):
-                            new_chip_list = [-1, -1]
-                            new_chip_list[a], new_chip_list[b] = chip_enemy[a], chip_enemy[b]
-                            new_chip = (new_chip_list[0], new_chip_list[1])
-                            list_with_sgen_chip_for_enemy.append(new_chip)
-
-            for chip in list_with_sgen_chip_for_enemy:
-                if dict_with_variants_for_enemy.get(chip) is not None:
-                    if count_chip_enemy >= 2:
-                        dict_with_variants_for_enemy[chip] += coefficent[2]
-                        dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
-                else:
-                    if count_chip_enemy == 1:
-                        dict_with_variants_for_enemy[chip] = coefficent[0]
-                        dict_with_variants_for_player[chip] = coefficent[0]
-                    if count_chip_enemy == 2:
-                        dict_with_variants_for_enemy[chip] = coefficent[1]
-                    if count_chip_enemy >= 3:
-                        dict_with_variants_for_enemy[chip] = coefficent[3]
-                        dict_with_variants_for_player[chip] = coefficent[3]
-
-        #Анализ диагональных линий
-        for flag in (0,1):
-            count_chip_enemy = 0
-            list_with_sgen_chip_for_enemy = []
-
-            chip_enemy = template_chip.copy()
-
-            chip_enemy[0], chip_enemy[1] = find_start_line(new_coord_motion[0], new_coord_motion[1], flag)
-            chip_enemy[2] = color_enemy
-            if flag == 0:
-                for_j = [(-1, -1), (1, 1)]
-                next_x = 1
-                next_y = 1
-            else:
-                for_j = [(-1, 1), (1, -1)]
-                next_x = -1
-                next_y = 1
-
-            while chip_enemy[0] <= cell_qty and chip_enemy[0] >= 0 and chip_enemy[1] <= cell_qty:
-                cop_for_j1, cop_for_j2 = chip_enemy[0], chip_enemy[1]
-
-                if check_in_2D_array(chip_enemy, now_coord_all_move_and_color):
-                    count_chip_enemy += 1
-                    for j1, j2 in for_j:
-                        chip_enemy[0], chip_enemy[1] = cop_for_j1 + j1, cop_for_j2 + j2
-                        if check_motion_for_generator(chip_enemy, now_coord_all_move_and_color):
-                            new_chip = (chip_enemy[0], chip_enemy[1])
-                            list_with_sgen_chip_for_enemy.append(new_chip)
-
-                chip_enemy[0] = cop_for_j1 + next_x
-                chip_enemy[1] = cop_for_j2 + next_y
-
-            for chip in list_with_sgen_chip_for_enemy:
-                if dict_with_variants_for_enemy.get(chip) is not None:
-                    if count_chip_enemy >= 2:
-                        dict_with_variants_for_enemy[chip] += coefficent[2]
-                        dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
-                else:
-                    if count_chip_enemy == 1:
-                        dict_with_variants_for_enemy[chip] = coefficent[0]
-                        dict_with_variants_for_player[chip] = coefficent[0]
-                    if count_chip_enemy == 2:
-                        dict_with_variants_for_enemy[chip] = coefficent[1]
-                    if count_chip_enemy >= 3:
-                        dict_with_variants_for_enemy[chip] = coefficent[3]
-                        dict_with_variants_for_player[chip] = coefficent[3]
-
-    return dict_with_variants_for_player, dict_with_variants_for_enemy
-
-
-
-
-@njit(cache=True)
-def find_start_line(x, y, flag):
-    cell_qty = 14
-    if flag == 0:
-        x1, y1 = x, y
-        while x1 != 0 and y1 != 0:
-            x1 -= 1
-            y1 -= 1
-        return x1, y1
-    else:
-        x2, y2 = x, y
-        while x2 != cell_qty and y2 != 0:
-            x2 += 1
-            y2 -= 1
-        return x2, y2
 
 
 
