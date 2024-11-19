@@ -128,11 +128,17 @@ def main():
                 game_graphics.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
                 main_board.set_coord(coord_best_move[0], coord_best_move[1], color_computer)
 
-                possible_moves_black_pl, possible_moves_white_pl = new_generator_motion_for_minmax(coord_best_move, main_board.give_chips(), create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl), main_board.give_all_line_whiteplayer())
-
                 game_graphics.set_number_move()
 
                 main_board.adding_lines(coord_best_move[0], coord_best_move[1], color_computer)
+
+                possible_moves_black_pl, possible_moves_white_pl = new_generator_motion_for_minmax(coord_best_move,
+                                                                                                   main_board.give_chips(),
+                                                                                                   create_independent_dict(
+                                                                                                       possible_moves_black_pl),
+                                                                                                   create_independent_dict(
+                                                                                                       possible_moves_white_pl),
+                                                                                                   main_board.give_all_line_whiteplayer())
 
                 # for_otladka[0].append(main_board.give_all_line_blackplayer())
                 # for_otladka[1].append(main_board.give_all_line_whiteplayer())

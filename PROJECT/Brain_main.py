@@ -299,9 +299,8 @@ def new_generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_col
     if new_coord_motion == (-1, -1):
         return dict_with_variants_for_player, dict_with_variants_for_enemy
 
-    cell_qty = 14
-    coefficent = [0.1, 0.3, 0.1, 0.6]
-    template_chip = np.array([-1, -1, -1], dtype=np.int8)
+    coefficent = [0.1, 0.4, 0.1, 0.7]
+    empty = np.array([-1, -1], dtype=np.int8)
 
     dict_with_variants_for_enemy.pop(new_coord_motion, None)
     dict_with_variants_for_player.pop(new_coord_motion, None)
@@ -309,7 +308,6 @@ def new_generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_col
     new_coord_motion = np.array(new_coord_motion)
     for line in line_enemy:
         if check_in_2D_array(new_coord_motion, line):
-            empty = np.array([-1, -1], dtype=np.int8)
             if np.array_equal(line[1], empty):
                 for i in range(-1, 2):
                     for j in range(-1, 2):
@@ -333,6 +331,7 @@ def new_generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_col
                 if check_motion_for_brain(coord[0], coord[1], now_coord_all_move_and_color):
                     if line_length == 2:
                         dict_with_variants_for_enemy[coord] = coefficent[1]
+                        dict_with_variants_for_player[coord] = coefficent[1]
                     elif line_length >= 3:
                         dict_with_variants_for_enemy[coord] = coefficent[3]
                         dict_with_variants_for_player[coord] = coefficent[3]
