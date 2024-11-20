@@ -146,14 +146,11 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
             next_variants_move_and_motion = (move, create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
             tmp, _, count_variants = minimax(child, depth*change_depth-1, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
 
-            if depth == 25:
-                print(move, tmp, change_depth)
-
             if tmp > value:
                 value = tmp
                 best_movement = move
 
-            if value > beta:
+            if value > beta or value == 1000000:
                 break
             alpha = max(alpha, value)
 
@@ -180,11 +177,60 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
                 value = tmp
                 best_movement = move
 
-            if value < alpha:
+            if value < alpha or value == -1000000:
                 break
             beta = min(beta, value)
 
     return value, best_movement, count_variants
+
+
+
+@njit(cache=True)
+def new_generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_color, dict_with_variants_for_player, dict_with_variants_for_enemy, line_enemy):
+    if new_coord_motion == (-1, -1):
+        dict_with_variants_for_player[(7,7)] = 0.001
+        return dict_with_variants_for_player, dict_with_variants_for_enemy
+
+    coefficent = [0.1, 0.4, 0.5]
+    empty = np.array([-1, -1], dtype=np.int8)
+
+    dict_with_variants_for_enemy.pop(new_coord_motion, None)
+    dict_with_variants_for_player.pop(new_coord_motion, None)
+
+    new_coord_motion = np.array(new_coord_motion)
+    for line in line_enemy:
+        if check_in_2D_array(new_coord_motion, line):
+            if np.array_equal(line[1], empty):
+                for i in range(-1, 2):
+                    for j in range(-1, 2):
+                        if i == 0 and j == 0:
+                            continue
+                        chip = (new_coord_motion[0] + i, new_coord_motion[1] + j)
+                        if chip not in dict_with_variants_for_enemy and check_motion_for_brain(chip[0], chip[1], now_coord_all_move_and_color):
+                            dict_with_variants_for_enemy[chip] = coefficent[0]
+                            dict_with_variants_for_player[chip] = coefficent[0]
+                continue
+
+            line_length = give_len_line(line)
+            x_progressive = line[1][0] - line[0][0]
+            y_progressive = line[1][1] - line[0][1]
+
+            coord_new_max = (
+            x_progressive + line[line_length-1][0], y_progressive + line[line_length-1][1])
+            coord_new_min = (line[0][0] - x_progressive, line[0][1] - y_progressive)
+
+            for coord in [coord_new_max, coord_new_min]:
+                if check_motion_for_brain(coord[0], coord[1], now_coord_all_move_and_color):
+                    if line_length == 2:
+                        dict_with_variants_for_enemy[coord] = coefficent[1]
+                        dict_with_variants_for_player[coord] = coefficent[1]
+                    elif line_length >= 3:
+                        dict_with_variants_for_enemy[coord] = coefficent[2]
+                        dict_with_variants_for_player[coord] = coefficent[2]
+
+    return dict_with_variants_for_player, dict_with_variants_for_enemy
+
+
 
 
 
@@ -292,53 +338,6 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
 #             x2 += 1
 #             y2 -= 1
 #         return x2, y2
-
-
-@njit(cache=True)
-def new_generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_color, dict_with_variants_for_player, dict_with_variants_for_enemy, line_enemy):
-    if new_coord_motion == (-1, -1):
-        return dict_with_variants_for_player, dict_with_variants_for_enemy
-
-    coefficent = [0.1, 0.4, 0.1, 0.7]
-    empty = np.array([-1, -1], dtype=np.int8)
-
-    dict_with_variants_for_enemy.pop(new_coord_motion, None)
-    dict_with_variants_for_player.pop(new_coord_motion, None)
-
-    new_coord_motion = np.array(new_coord_motion)
-    for line in line_enemy:
-        if check_in_2D_array(new_coord_motion, line):
-            if np.array_equal(line[1], empty):
-                for i in range(-1, 2):
-                    for j in range(-1, 2):
-                        if i == 0 and j == 0:
-                            continue
-                        chip = (new_coord_motion[0] + i, new_coord_motion[1] + j)
-                        if chip not in dict_with_variants_for_enemy and check_motion_for_brain(chip[0], chip[1], now_coord_all_move_and_color):
-                            dict_with_variants_for_enemy[chip] = coefficent[0]
-                            dict_with_variants_for_player[chip] = coefficent[0]
-                continue
-
-            line_length = give_len_line(line)
-            x_progressive = line[1][0] - line[0][0]
-            y_progressive = line[1][1] - line[0][1]
-
-            coord_new_max = (
-            x_progressive + line[line_length-1][0], y_progressive + line[line_length-1][1])
-            coord_new_min = (line[0][0] - x_progressive, line[0][1] - y_progressive)
-
-            for coord in [coord_new_max, coord_new_min]:
-                if check_motion_for_brain(coord[0], coord[1], now_coord_all_move_and_color):
-                    if line_length == 2:
-                        dict_with_variants_for_enemy[coord] = coefficent[1]
-                        dict_with_variants_for_player[coord] = coefficent[1]
-                    elif line_length >= 3:
-                        dict_with_variants_for_enemy[coord] = coefficent[3]
-                        dict_with_variants_for_player[coord] = coefficent[3]
-
-    return dict_with_variants_for_player, dict_with_variants_for_enemy
-
-
 
 
 
