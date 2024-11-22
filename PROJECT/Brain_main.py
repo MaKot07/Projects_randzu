@@ -123,53 +123,57 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
     if board_condition.check_colors_win() != 0:
         return (board_condition.find_win_position_score(), (-1,-1), count_variants)
     if depth <= 0:
-        bl_line = board_condition.now_all_line_blackplayer
-        wh_line = board_condition.now_all_line_whiteplayer
-        all_coord = board_condition.now_coord_all_move_and_color
-        return (find_position_score(bl_line, wh_line, all_coord), (-1,-1), count_variants)
+        all_lines_black = board_condition.give_all_line_blackplayer()
+        all_lines_white = board_condition.give_all_line_whiteplayer()
+        chips = board_condition.give_chips()
+
+        return (find_position_score(all_lines_black, all_lines_white, chips), (-1, -1), count_variants)
 
     if maximizingPlayer:
         value = float('-inf')
-        possible_moves_white_pl, possible_moves_black_pl = new_generator_motion_for_minmax(last_variants_move_and_motion[0], board_condition.give_chips(), create_independent_dict(last_variants_move_and_motion[2]), create_independent_dict(last_variants_move_and_motion[1]), board_condition.now_all_line_blackplayer)
-        for move, change_depth in possible_moves_white_pl.items():
-            child = board_condition.get_new_state(move, black)
-            tmp, _, count_variants = minimax(child, 0, last_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
-            if tmp >= 1000000:
-                return (tmp, move, count_variants)
+        new_possible_moves = new_generator_motion_for_minmax(last_variants_move_and_motion[0], board_condition.give_chips(), create_independent_dict(last_variants_move_and_motion[1]), board_condition.now_all_line_blackplayer)
+        for move, change_depth in new_possible_moves.items():
+            if change_depth >= 0.5:
+                child = board_condition.get_new_state(move, black)
+                tmp, _, count_variants = minimax(child, 0, last_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
+                if tmp >= 1000000:
+                    return (tmp, move, count_variants)
 
-        for move, change_depth in possible_moves_white_pl.items():
+        for move, change_depth in new_possible_moves.items():
 
             child = board_condition.get_new_state(move, black)
 
             count_variants += 1
             #print("#@%", count_variants)
-            next_variants_move_and_motion = (move, create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
+            next_variants_move_and_motion = (move, create_independent_dict(new_possible_moves))
             tmp, _, count_variants = minimax(child, depth*change_depth-1, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
+
 
             if tmp > value:
                 value = tmp
                 best_movement = move
 
-            if value > beta or value == 1000000:
+            if value > beta:
                 break
             alpha = max(alpha, value)
 
     else:
         value = float('inf')
-        possible_moves_black_pl, possible_moves_white_pl = new_generator_motion_for_minmax(last_variants_move_and_motion[0], board_condition.give_chips(), create_independent_dict(last_variants_move_and_motion[1]), create_independent_dict(last_variants_move_and_motion[2]), board_condition.now_all_line_whiteplayer)
+        new_possible_moves = new_generator_motion_for_minmax(last_variants_move_and_motion[0], board_condition.give_chips(), create_independent_dict(last_variants_move_and_motion[1]), board_condition.now_all_line_whiteplayer)
 
-        for move, change_depth in possible_moves_black_pl.items():
-            child = board_condition.get_new_state(move, white)
-            tmp, _, count_variants = minimax(child, 0, last_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
-            if tmp <= -1000000:
-                return (tmp, move, count_variants)
+        for move, change_depth in new_possible_moves.items():
+            if change_depth >= 0.5:
+                child = board_condition.get_new_state(move, white)
+                tmp, _, count_variants = minimax(child, 0, last_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
+                if tmp <= -1000000:
+                    return (tmp, move, count_variants)
 
-        for move, change_depth in possible_moves_black_pl.items():
+        for move, change_depth in new_possible_moves.items():
             child = board_condition.get_new_state(move, white)
 
             count_variants += 1
             #print("#@%", count_variants)
-            next_variants_move_and_motion = (move, create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
+            next_variants_move_and_motion = (move, create_independent_dict(new_possible_moves))
             tmp, _, count_variants = minimax(child, depth*change_depth-1, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
 
 
@@ -177,7 +181,7 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
                 value = tmp
                 best_movement = move
 
-            if value < alpha or value == -1000000:
+            if value < alpha:
                 break
             beta = min(beta, value)
 
@@ -186,16 +190,16 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
 
 
 @njit(cache=True)
-def new_generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_color, dict_with_variants_for_player, dict_with_variants_for_enemy, line_enemy):
+def new_generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_color, dict_with_variants, line_enemy):
     if new_coord_motion == (-1, -1):
-        dict_with_variants_for_player[(7,7)] = 0.001
-        return dict_with_variants_for_player, dict_with_variants_for_enemy
+        dict_with_variants[(7,7)] = 0.001
+        return dict_with_variants
 
-    coefficent = [0.1, 0.4, 0.5]
+    coefficent = [0.1, 0.3, 0.5]
     empty = np.array([-1, -1], dtype=np.int8)
 
-    dict_with_variants_for_enemy.pop(new_coord_motion, None)
-    dict_with_variants_for_player.pop(new_coord_motion, None)
+    dict_with_variants.pop(new_coord_motion, None)
+
 
     new_coord_motion = np.array(new_coord_motion)
     for line in line_enemy:
@@ -206,9 +210,8 @@ def new_generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_col
                         if i == 0 and j == 0:
                             continue
                         chip = (new_coord_motion[0] + i, new_coord_motion[1] + j)
-                        if chip not in dict_with_variants_for_enemy and check_motion_for_brain(chip[0], chip[1], now_coord_all_move_and_color):
-                            dict_with_variants_for_enemy[chip] = coefficent[0]
-                            dict_with_variants_for_player[chip] = coefficent[0]
+                        if chip not in dict_with_variants and check_motion_for_brain(chip[0], chip[1], now_coord_all_move_and_color):
+                            dict_with_variants[chip] = coefficent[0]
                 continue
 
             line_length = give_len_line(line)
@@ -222,13 +225,11 @@ def new_generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_col
             for coord in [coord_new_max, coord_new_min]:
                 if check_motion_for_brain(coord[0], coord[1], now_coord_all_move_and_color):
                     if line_length == 2:
-                        dict_with_variants_for_enemy[coord] = coefficent[1]
-                        dict_with_variants_for_player[coord] = coefficent[1]
+                        dict_with_variants[coord] = coefficent[1]
                     elif line_length >= 3:
-                        dict_with_variants_for_enemy[coord] = coefficent[2]
-                        dict_with_variants_for_player[coord] = coefficent[2]
+                        dict_with_variants[coord] = coefficent[2]
 
-    return dict_with_variants_for_player, dict_with_variants_for_enemy
+    return dict_with_variants
 
 
 
