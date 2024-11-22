@@ -1,5 +1,5 @@
-from numba import njit, jit, config
-from numba import typed, typeof, types
+from numba import njit
+from numba import typed
 import numpy as np
 
 

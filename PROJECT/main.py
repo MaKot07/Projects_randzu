@@ -3,9 +3,6 @@ import time
 
 from Graphics.Graphics_main import *
 from PROJECT.Brain_main import *
-from neural_network import *
-import numpy as np
-from numba import typed
 import numba
 from numba import typed, types
 import pickle
@@ -23,16 +20,11 @@ def main():
     color_user = color_choice()
     number_of_movies = 0
     index_x_rect, index_y_rect = -1, -1
-    len_board = 15
-    play_neural_network = False
-    if play_neural_network:
-        model = tf.keras.models.load_model(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\neural_network\best_prediction_model.keras', custom_objects={'CustomLossLayer': CustomLossLayer, 'custom_activation': custom_activation})
 
     possible_moves = typed.Dict.empty(
         key_type=types.UniTuple(types.int64, 2),
         value_type=numba.types.float64
     )
-
 
     passive_buttons = [
         Button("who_move", 110, 20, 220, 70, ""),
@@ -275,6 +267,9 @@ if __name__ == "__main__":
 
 
 #Блок кода для запуска нейросети
+#
+# if play_neural_network:
+#     model = tf.keras.models.load_model(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\neural_network\best_prediction_model.keras', custom_objects={'CustomLossLayer': CustomLossLayer, 'custom_activation': custom_activation})
 # if play_neural_network:
 #     if game_graphics.give_number_move() > 3:
 #
