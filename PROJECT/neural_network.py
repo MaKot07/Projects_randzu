@@ -1,13 +1,12 @@
-import numpy as np
 import copy
 
 import numba
+from numba import typed, types
 
 from tensorflow import keras
 from tensorflow.keras import layers
 import tensorflow as tf
 from tensorflow.keras.layers import Layer
-from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Input, Dense
 
 import matplotlib.pyplot as plt
@@ -15,7 +14,6 @@ import matplotlib.pyplot as plt
 from Graphics.Graphics_main import *
 import sys
 from Brain_main import *
-import pandas as pd
 import pickle
 
 def generation_position_and_save(n, number_move):
@@ -133,7 +131,7 @@ def sily_minimax(board_condition, depth, last_variants, maximizingPlayer, alpha=
             new_variants_move = P_generator_motion(move, board_condition.give_chips(), copy.copy(last_variants))
 
             count_variants += 1
-            #print("#@%", count_variants)
+            ##print("#@%", count_variants)
             tmp, _, count_variants = sily_minimax(child, depth - 1, copy.copy(new_variants_move), not maximizingPlayer, alpha, beta, count_variants)
 
             if tmp > value:
@@ -152,7 +150,7 @@ def sily_minimax(board_condition, depth, last_variants, maximizingPlayer, alpha=
             new_variants_move = P_generator_motion(move, board_condition.give_chips(), copy.copy(last_variants))
 
             count_variants += 1
-            #print("#@%", count_variants)
+            ##print("#@%", count_variants)
             tmp, _, count_variants = sily_minimax(child, depth - 1, copy.copy(new_variants_move), not maximizingPlayer, alpha, beta, count_variants)
 
             if tmp < value:
@@ -200,7 +198,7 @@ def show_positions():
     i = 0
 
     Visual_board = Game_Graphics(0)
-    Visual_board.draw_all_game(0)
+    Visual_board.draw_all_game(0, [])
 
     while True:
         event = now_event()
@@ -210,19 +208,23 @@ def show_positions():
                 sys.exit()
 
             if event.button == 1:
-                Visual_board = Game_Graphics(0, convert_positions(positions[i]))
-
-                label = np.where(labels[i] == max(labels[i]))[0][0]
-                coord_best_move = (label - (label // 15) * 15, label // 15)
-                print(coord_best_move)
-                index_x_rect, index_y_rect = coord_best_move[0], coord_best_move[1]
-                Visual_board.draw_all_game(0, ( index_x_rect, index_y_rect))
-                # print("BLACK", all_black_lines[i])
-                # print("WHITE", all_white_lines[i])
-
-                i +=1
-                if i == len(positions):
+                i += 1
+                if i >= len(positions):
                     sys.exit()
+            if event.button == 3:
+                i = int(input())
+                if i >= len(positions):
+                    sys.exit()
+
+            Visual_board = Game_Graphics(0, convert_positions(positions[i]))
+
+            label = np.where(labels[i] == max(labels[i]))[0][0]
+            coord_best_move = (label - (label // 15) * 15, label // 15)
+            #print(coord_best_move)
+            index_x_rect, index_y_rect = coord_best_move[0], coord_best_move[1]
+            Visual_board.draw_all_game(0, [], (index_x_rect, index_y_rect))
+            # #print("BLACK", all_black_lines[i])
+            # #print("WHITE", all_white_lines[i])
 
 def now_event():
     for event in pygame.event.get():
@@ -270,17 +272,14 @@ def generation_labels():
             except EOFError:
                 break
 
-    possible_moves_white_pl = typed.Dict.empty(
+    possible_moves = typed.Dict.empty(
         key_type=types.UniTuple(types.int64, 2),
-        value_type=numba.types.int64
-    )
-    possible_moves_black_pl = typed.Dict.empty(
-        key_type=types.UniTuple(types.int64, 2),
-        value_type=numba.types.int64
+        value_type=numba.types.float64
     )
 
+
     for sample in range(len(labels), len(positions)):
-        print("Succesfull is:", ((sample+1)/len(positions))*100, "%")
+        #print("Succesfull is:", ((sample+1)/len(positions))*100, "%")
         position = convert_positions(positions[sample])
 
         if len(position) % 2 == 0:
@@ -291,24 +290,24 @@ def generation_labels():
         Board_MinMax_for_labels = Board(color_minmax,all_black_lines[sample],
                              all_white_lines[sample], position)
 
-        possible_moves_black_pl, possible_moves_white_pl =  new_generator_motion_for_create_start_moves(position, create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl), white)
-        possible_moves_white_pl, possible_moves_black_pl = new_generator_motion_for_create_start_moves(position,
-                                                                                                       create_independent_dict(
-                                                                                                           possible_moves_white_pl),
-                                                                                                       create_independent_dict(
-                                                                                                           possible_moves_black_pl),
-                                                                                                       black)
-        next_variants_move_and_motion = ((-1,-1), create_independent_dict(possible_moves_black_pl),
-                                         create_independent_dict(possible_moves_white_pl))
+        possible_moves = new_generator_motion_for_create_start_moves(
+             Board_MinMax_for_labels.give_chips(), possible_moves,
+            Board_MinMax_for_labels.give_all_line_whiteplayer(), white)
+
+        possible_moves = new_generator_motion_for_create_start_moves(
+             Board_MinMax_for_labels.give_chips(),
+            create_independent_dict(possible_moves), Board_MinMax_for_labels.give_all_line_blackplayer(), black)
+
+        next_variants_move_and_motion = ((-2,-2),create_independent_dict(possible_moves))
 
         maxim = True if color_minmax == white else False
-        best_value, coord_best_move, count_all_variants = minimax(Board_MinMax_for_labels, 35, next_variants_move_and_motion,
+        best_value, coord_best_move, count_all_variants = minimax(Board_MinMax_for_labels, 25, next_variants_move_and_motion,
                                                                   maxim, float('-inf'), float('inf'), 0)
 
         if coord_best_move[0] >= 0:
             new_labels = np.zeros((255), dtype=np.int8)
             new_labels[coord_best_move[1]*15 + coord_best_move[0]] = 1
-            #print(coord_best_move, " ", new_labels)
+            ##print(coord_best_move, " ", new_labels)
         else:
             new_labels = np.zeros((255))
             new_labels[0] = -100
@@ -327,10 +326,14 @@ def generation_labels():
         )
 
 
-def new_generator_motion_for_create_start_moves(now_coord_all_move_and_color, dict_with_variants_for_player, dict_with_variants_for_enemy, color_enemy):
-    cell_qty = 14
-    coefficent = [20, 10, 7, 3, 1]
-    template_chip = np.array([-1, -1, -1], dtype=np.int8)
+@njit
+def new_generator_motion_for_create_start_moves(now_coord_all_move_and_color, dict_with_variants, line_enemy, color_enemy):
+    if not now_coord_all_move_and_color.any():
+        dict_with_variants[(7, 7)] = 0.001
+        return dict_with_variants
+
+    coefficent = [0.1, 0.3, 0.5]
+    empty = np.array([-1, -1], dtype=np.int8)
 
     all_coords = []
     for coord in now_coord_all_move_and_color:
@@ -338,100 +341,35 @@ def new_generator_motion_for_create_start_moves(now_coord_all_move_and_color, di
             all_coords.append((coord[0], coord[1]))
 
     for new_coord_motion in all_coords:
-        #Анализ вертикальной линии и горизоньальной
-        for a,b in [[0,1], [1,0]]:
-            count_chip_enemy = 0
-            list_with_sgen_chip_for_enemy = []
-            for i in range(cell_qty+1):
+        new_coord_motion = np.array(new_coord_motion)
+        for line in line_enemy:
+            if check_in_2D_array(new_coord_motion, line):
+                if np.array_equal(line[1], empty):
+                    for i in range(-1, 2):
+                        for j in range(-1, 2):
+                            if i == 0 and j == 0:
+                                continue
+                            chip = (new_coord_motion[0] + i, new_coord_motion[1] + j)
+                            if chip not in dict_with_variants and check_motion_for_brain(chip[0], chip[1], now_coord_all_move_and_color):
+                                dict_with_variants[chip] = coefficent[0]
+                    continue
 
-                chip_enemy = template_chip.copy()
-                chip_enemy[a] = new_coord_motion[a]
-                chip_enemy[b] = i
-                chip_enemy[2] = color_enemy
-                if check_in_2D_array(chip_enemy, now_coord_all_move_and_color):
-                    count_chip_enemy += 1
-                    cop_b = chip_enemy[b]
-                    for j in (-1, 1):
-                        chip_enemy[b] = cop_b + j
-                        if check_motion_for_generator(chip_enemy, now_coord_all_move_and_color):
-                            new_chip_list = [-1, -1]
-                            new_chip_list[a], new_chip_list[b] = chip_enemy[a], chip_enemy[b]
-                            new_chip = (new_chip_list[0], new_chip_list[1])
-                            list_with_sgen_chip_for_enemy.append(new_chip)
+                line_length = give_len_line(line)
+                x_progressive = line[1][0] - line[0][0]
+                y_progressive = line[1][1] - line[0][1]
 
-            for chip in list_with_sgen_chip_for_enemy:
-                if dict_with_variants_for_enemy.get(chip) is not None:
-                    if count_chip_enemy >= 2:
-                        if dict_with_variants_for_enemy.get(chip) == coefficent[1]:
-                            dict_with_variants_for_enemy[chip] = -coefficent[2]
-                            dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
-                else:
-                    if count_chip_enemy == 1:
-                        dict_with_variants_for_enemy[chip] = -coefficent[0]
-                        dict_with_variants_for_player[chip] = -coefficent[0]
-                    if count_chip_enemy == 2:
-                        dict_with_variants_for_enemy[chip] = -coefficent[1]
-                        dict_with_variants_for_player[chip] = -coefficent[1]
-                    if count_chip_enemy == 3:
-                        dict_with_variants_for_enemy[chip] = -coefficent[3]
-                        dict_with_variants_for_player[chip] = -coefficent[3]
-                    if count_chip_enemy > 3:
-                        dict_with_variants_for_enemy[chip] = -coefficent[4]
-                        dict_with_variants_for_player[chip] = -coefficent[4]
+                coord_new_max = (
+                x_progressive + line[line_length-1][0], y_progressive + line[line_length-1][1])
+                coord_new_min = (line[0][0] - x_progressive, line[0][1] - y_progressive)
 
-        #Анализ диагональных линий
-        for flag in (0,1):
-            count_chip_enemy = 0
-            list_with_sgen_chip_for_enemy = []
+                for coord in [coord_new_max, coord_new_min]:
+                    if check_motion_for_brain(coord[0], coord[1], now_coord_all_move_and_color):
+                        if line_length == 2:
+                            dict_with_variants[coord] = coefficent[1]
+                        elif line_length >= 3:
+                            dict_with_variants[coord] = coefficent[2]
 
-            chip_enemy = template_chip.copy()
-
-            chip_enemy[0], chip_enemy[1] = find_start_line(new_coord_motion[0], new_coord_motion[1], flag)
-            chip_enemy[2] = color_enemy
-            if flag == 0:
-                for_j = [(-1, -1), (1, 1)]
-                next_x = 1
-                next_y = 1
-            else:
-                for_j = [(-1, 1), (1, -1)]
-                next_x = -1
-                next_y = 1
-
-            while chip_enemy[0] <= cell_qty and chip_enemy[0] >= 0 and chip_enemy[1] <= cell_qty:
-                cop_for_j1, cop_for_j2 = chip_enemy[0], chip_enemy[1]
-
-                if check_in_2D_array(chip_enemy, now_coord_all_move_and_color):
-                    count_chip_enemy += 1
-                    for j1, j2 in for_j:
-                        chip_enemy[0], chip_enemy[1] = cop_for_j1 + j1, cop_for_j2 + j2
-                        if check_motion_for_generator(chip_enemy, now_coord_all_move_and_color):
-                            new_chip = (chip_enemy[0], chip_enemy[1])
-                            list_with_sgen_chip_for_enemy.append(new_chip)
-
-                chip_enemy[0] = cop_for_j1 + next_x
-                chip_enemy[1] = cop_for_j2 + next_y
-
-            for chip in list_with_sgen_chip_for_enemy:
-                if dict_with_variants_for_enemy.get(chip) is not None:
-                    if count_chip_enemy >= 2:
-                        if dict_with_variants_for_enemy.get(chip) == coefficent[1]:
-                            dict_with_variants_for_enemy[chip] = -coefficent[2]
-                            dict_with_variants_for_player[chip] = dict_with_variants_for_enemy[chip]
-                else:
-                    if count_chip_enemy == 1:
-                        dict_with_variants_for_enemy[chip] = -coefficent[0]
-                        dict_with_variants_for_player[chip] = -coefficent[0]
-                    if count_chip_enemy == 2:
-                        dict_with_variants_for_enemy[chip] = -coefficent[1]
-                        dict_with_variants_for_player[chip] = -coefficent[1]
-                    if count_chip_enemy == 3:
-                        dict_with_variants_for_enemy[chip] = -coefficent[3]
-                        dict_with_variants_for_player[chip] = -coefficent[3]
-                    if count_chip_enemy > 3:
-                        dict_with_variants_for_enemy[chip] = -coefficent[4]
-                        dict_with_variants_for_player[chip] = -coefficent[4]
-
-    return dict_with_variants_for_player, dict_with_variants_for_enemy
+    return dict_with_variants
 
 
 def train_neural_network():
@@ -654,7 +592,7 @@ def create_schedule_lr(model):
 #generation_position_and_save(10000, 50)
 
 
-#generation_labels()
+generation_labels()
 
 
 #show_positions()

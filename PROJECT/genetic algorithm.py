@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-@njit(cache=True)
+@njit
 def minimax_for_genetic(board_condition, depth, last_variants_move_and_motion, maximizingPlayer, coeficent, alpha=float('-inf'), beta=float('inf'), count_variants=0):
     if board_condition.check_colors_win() != -1:
         return (board_condition.find_win_position_score(), (-1,-1), count_variants)
@@ -39,7 +39,7 @@ def minimax_for_genetic(board_condition, depth, last_variants_move_and_motion, m
             child = board_condition.get_new_state(move, black)
 
             count_variants += 1
-            #print("#@%", count_variants)
+            ##print("#@%", count_variants)
             next_variants_move_and_motion = (move, create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
             tmp, _, count_variants = minimax_for_genetic(child, depth - 1 + change_depth, next_variants_move_and_motion, not maximizingPlayer, coeficent, alpha, beta, count_variants)
 
@@ -62,7 +62,7 @@ def minimax_for_genetic(board_condition, depth, last_variants_move_and_motion, m
             child = board_condition.get_new_state(move, white)
 
             count_variants += 1
-            #print("#@%", count_variants)
+            ##print("#@%", count_variants)
             next_variants_move_and_motion = (move, create_independent_dict(possible_moves_black_pl), create_independent_dict(possible_moves_white_pl))
             tmp, _, count_variants = minimax_for_genetic(child, depth - 1 + change_depth, next_variants_move_and_motion, not maximizingPlayer, coeficent, alpha, beta, count_variants)
 
@@ -80,7 +80,7 @@ def minimax_for_genetic(board_condition, depth, last_variants_move_and_motion, m
     return value, best_movement, count_variants
 
 
-@njit(cache=True)
+@njit
 def new_generator_motion_for_genetic(new_coord_motion, now_coord_all_move_and_color, dict_with_variants_for_player, dict_with_variants_for_enemy, color_enemy, coeficent):
     cell_qty = 14
     template_chip = np.array([-1, -1, -1], dtype=np.int8)
@@ -282,7 +282,7 @@ def Find_evulate(individual):
         win_color = board.check_colors_win()
         number_of_movies += 1
 
-        # print(game_graphics.give_number_move())
+        # #print(game_graphics.give_number_move())
         # game_graphics.set_coord(coord_best_move[0], coord_best_move[1], move_color)
         # game_graphics.set_number_move()
         # game_graphics.draw_all_game(win_color)
@@ -367,8 +367,8 @@ population, logbook = algelitism.eaSimpleElitism(population, toolbox,
 maxFitnessValues, meanFitnessValues = logbook.select("min", "avg")
 
 best = hof.items[0]
-print(hof)
-print(best)
+#print(hof)
+#print(best)
 
 
 

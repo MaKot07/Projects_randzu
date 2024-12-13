@@ -117,7 +117,7 @@ class Board:
 
 
 
-@njit(cache=True)
+@njit
 def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPlayer, alpha=float('-inf'), beta=float('inf'), count_variants=0):
 
     if board_condition.check_colors_win() != 0:
@@ -144,7 +144,7 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
             child = board_condition.get_new_state(move, black)
 
             count_variants += 1
-            #print("#@%", count_variants)
+            ##print("#@%", count_variants)
             next_variants_move_and_motion = (move, create_independent_dict(new_possible_moves))
             tmp, _, count_variants = minimax(child, depth*change_depth-1, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
 
@@ -172,7 +172,7 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
             child = board_condition.get_new_state(move, white)
 
             count_variants += 1
-            #print("#@%", count_variants)
+            ##print("#@%", count_variants)
             next_variants_move_and_motion = (move, create_independent_dict(new_possible_moves))
             tmp, _, count_variants = minimax(child, depth*change_depth-1, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
 
@@ -189,7 +189,7 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
 
 
 
-@njit(cache=True)
+@njit
 def new_generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_color, dict_with_variants, line_enemy):
     if new_coord_motion == (-1, -1):
         dict_with_variants[(7,7)] = 0.001
@@ -236,7 +236,7 @@ def new_generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_col
 
 
 
-# @njit(cache=True)
+# @njit
 # def generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_color, dict_with_variants_for_player, dict_with_variants_for_enemy, color_enemy):
 #     if new_coord_motion == (-1, -1):
 #         return dict_with_variants_for_player, dict_with_variants_for_enemy
@@ -324,7 +324,7 @@ def new_generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_col
 #     return dict_with_variants_for_player, dict_with_variants_for_enemy
 #
 #
-# @njit(cache=True)
+# @njit
 # def find_start_line(x, y, flag):
 #     cell_qty = 14
 #     if flag == 0:
@@ -375,7 +375,7 @@ def silly_P_generator_motion(now_coord_all_move_and_color):
     return sgen_motion
 
 
-@njit(cache=True)
+@njit
 def check_line_isolated(our_check_line, now_coord_all_move_and_color):
     empty = np.array([-1, -1], dtype=np.int8)
     if np.array_equal(our_check_line[1], empty):
@@ -399,7 +399,7 @@ def check_line_isolated(our_check_line, now_coord_all_move_and_color):
         else:
             return 0
 
-@njit(cache=True)
+@njit
 def find_position_score(now_all_line_blackplayer, now_all_line_whiteplayer, now_coord_all_move_and_color):
     pos_score = 0
     for line in now_all_line_whiteplayer:
@@ -448,7 +448,7 @@ def find_position_score(now_all_line_blackplayer, now_all_line_whiteplayer, now_
     return pos_score
 
 
-@njit(cache=True)
+@njit
 def dynamic_score_positions(all_line):
     dynamic_score = 0
     for line in all_line:
