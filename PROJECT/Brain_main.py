@@ -117,7 +117,7 @@ class Board:
 
 
 
-@njit
+@njit(cache=True)
 def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPlayer, alpha=float('-inf'), beta=float('inf'), count_variants=0):
 
     if board_condition.check_colors_win() != 0:
@@ -132,6 +132,7 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
     if maximizingPlayer:
         value = float('-inf')
         new_possible_moves = new_generator_motion_for_minmax(last_variants_move_and_motion[0], board_condition.give_chips(), create_independent_dict(last_variants_move_and_motion[1]), board_condition.now_all_line_blackplayer)
+
         for move, change_depth in new_possible_moves.items():
             if change_depth >= 0.5:
                 child = board_condition.get_new_state(move, black)
@@ -147,7 +148,6 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
             ##print("#@%", count_variants)
             next_variants_move_and_motion = (move, create_independent_dict(new_possible_moves))
             tmp, _, count_variants = minimax(child, depth*change_depth-1, next_variants_move_and_motion, not maximizingPlayer, alpha, beta, count_variants)
-
 
             if tmp > value:
                 value = tmp
@@ -190,40 +190,53 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
 
 
 @njit
-def new_generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_color, dict_with_variants, line_enemy):
+def new_generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_color, dict_with_variants, lines):
     if new_coord_motion == (-1, -1):
         dict_with_variants[(7,7)] = 0.001
         return dict_with_variants
 
-    coefficent = [0.1, 0.3, 0.5]
+    coefficent = [0.1, 0.3, 0.5, 0.6]
     empty = np.array([-1, -1], dtype=np.int8)
 
     dict_with_variants.pop(new_coord_motion, None)
 
-
     new_coord_motion = np.array(new_coord_motion)
-    for line in line_enemy:
-        if check_in_2D_array(new_coord_motion, line):
-            if np.array_equal(line[1], empty):
-                for i in range(-1, 2):
-                    for j in range(-1, 2):
-                        if i == 0 and j == 0:
-                            continue
-                        chip = (new_coord_motion[0] + i, new_coord_motion[1] + j)
-                        if chip not in dict_with_variants and check_motion_for_brain(chip[0], chip[1], now_coord_all_move_and_color):
-                            dict_with_variants[chip] = coefficent[0]
-                continue
+    for line in lines:
+        if not check_in_2D_array(new_coord_motion, line):
+            continue
+        if np.array_equal(line[1], empty):
+            for i in range(-1, 2):
+                for j in range(-1, 2):
+                    if i == 0 and j == 0:
+                        continue
+                    chip = (new_coord_motion[0] + i, new_coord_motion[1] + j)
 
-            line_length = give_len_line(line)
-            x_progressive = line[1][0] - line[0][0]
-            y_progressive = line[1][1] - line[0][1]
+                    if chip not in dict_with_variants and check_motion_for_brain(chip[0], chip[1], now_coord_all_move_and_color):
+                        dict_with_variants[chip] = coefficent[0]
 
-            coord_new_max = (
-            x_progressive + line[line_length-1][0], y_progressive + line[line_length-1][1])
-            coord_new_min = (line[0][0] - x_progressive, line[0][1] - y_progressive)
+            continue
 
-            for coord in [coord_new_max, coord_new_min]:
-                if check_motion_for_brain(coord[0], coord[1], now_coord_all_move_and_color):
+        line_length = give_len_line(line)
+        x_progressive = line[1][0] - line[0][0]
+        y_progressive = line[1][1] - line[0][1]
+
+        coord_new_max = (
+        x_progressive + line[line_length-1][0], y_progressive + line[line_length-1][1])
+        coord_new_min = (line[0][0] - x_progressive, line[0][1] - y_progressive)
+
+        for coord in [coord_new_max, coord_new_min]:
+            if check_motion_for_brain(coord[0], coord[1], now_coord_all_move_and_color):
+                if dict_with_variants.get(coord) is not None:
+                    if dict_with_variants.get(coord) >= coefficent[1]:
+                        dict_with_variants[coord] = coefficent[3]
+                        continue
+
+                    if line_length == 2:
+                        dict_with_variants[coord] = coefficent[1]
+                    elif line_length >= 3:
+                        dict_with_variants[coord] = coefficent[2]
+
+                else:
                     if line_length == 2:
                         dict_with_variants[coord] = coefficent[1]
                     elif line_length >= 3:
@@ -388,63 +401,31 @@ def check_line_isolated(our_check_line, now_coord_all_move_and_color):
     coord_new_max = (x_progressive + our_check_line[last_element][0], y_progressive + our_check_line[last_element][1])
     coord_new_min = (our_check_line[0][0] - x_progressive, our_check_line[0][1] - y_progressive)
 
-    check_coord_new_max = check_motion_for_brain(coord_new_max[0], coord_new_max[1], now_coord_all_move_and_color)
-    check_coord_new_min = check_motion_for_brain(coord_new_min[0], coord_new_min[1], now_coord_all_move_and_color)
+    check_coord_new_max = int(check_motion_for_brain(coord_new_max[0], coord_new_max[1], now_coord_all_move_and_color))
+    check_coord_new_min = int(check_motion_for_brain(coord_new_min[0], coord_new_min[1], now_coord_all_move_and_color))
 
-    if check_coord_new_max == False and check_coord_new_min == False:
-        return 2
-    else:
-        if check_coord_new_max == False or check_coord_new_min == False:
-            return 1
-        else:
-            return 0
+    return 2 - check_coord_new_min - check_coord_new_max
 
 @njit
 def find_position_score(now_all_line_blackplayer, now_all_line_whiteplayer, now_coord_all_move_and_color):
+
+    score_rules = {
+        0: {4:10000, 3:1000, 2:140, 1:5},
+        1: {4:3000, 3:350, 2:60}
+    }
+
     pos_score = 0
     for line in now_all_line_whiteplayer:
         check_isolated = check_line_isolated(line, now_coord_all_move_and_color)
-        if check_isolated == 0:
-            if give_len_line(line) == 4:
-                pos_score += 10000
-            if give_len_line(line) == 3:
-                pos_score += 1000
-            if give_len_line(line) == 2:
-                pos_score += 140
-            if give_len_line(line) == 1:
-                pos_score += 5
+        if check_isolated in score_rules:
+            pos_score += score_rules[check_isolated][give_len_line(line)]
 
-        if check_isolated == 1:
-            if give_len_line(line) == 4:
-                pos_score += 3000
-            if give_len_line(line) == 3:
-                pos_score += 350
-            if give_len_line(line) == 2:
-                pos_score += 60
-            if give_len_line(line) == 1:
-                pos_score += 10
 
     for line in now_all_line_blackplayer:
         check_isolated = check_line_isolated(line, now_coord_all_move_and_color)
-        if check_isolated == 0:
-            if give_len_line(line) == 4:
-                pos_score -= 10000
-            if give_len_line(line) == 3:
-                pos_score -= 1000
-            if give_len_line(line) == 2:
-                pos_score -= 140
-            if give_len_line(line) == 1:
-                pos_score -= 5
+        if check_isolated in score_rules:
+            pos_score -= score_rules[check_isolated][give_len_line(line)]
 
-        if check_isolated == 1:
-            if give_len_line(line) == 4:
-                pos_score -= 3000
-            if give_len_line(line) == 3:
-                pos_score -= 350
-            if give_len_line(line) == 2:
-                pos_score -= 60
-            if give_len_line(line) == 1:
-                pos_score -= 10
     return pos_score
 
 
