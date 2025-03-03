@@ -117,7 +117,7 @@ class Board:
 
 
 
-@njit(cache=True)
+@njit
 def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPlayer, alpha=float('-inf'), beta=float('inf'), count_variants=0):
 
     if board_condition.check_colors_win() != 0:
