@@ -43,7 +43,7 @@ def create_data(n, number_move):
                 next_variants_move_and_motion = ((coord_best_move[0], coord_best_move[1]), create_independent_dict(possible_moves))
 
                 maxim = False
-                best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 15,
+                best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, np.random.randint(9, 11),
                                                                           next_variants_move_and_motion, maxim,
                                                                           float('-inf'), float('inf'), 0)
 

@@ -2,6 +2,7 @@ from Graphics.Graphics_main import *
 from Brain_main import *
 import numba
 from numba import typed, types
+import time
 
 
 def now_event():
@@ -52,6 +53,8 @@ def main():
         event = now_event()
 
         if comp_move and win_color == 0:
+            time_start = time.time()
+
             Board_MinMax = Board(color_computer, main_board.give_all_line_blackplayer(), main_board.give_all_line_whiteplayer(), main_board.give_chips())
 
             possible_moves.pop((index_x_rect, index_y_rect), None)
@@ -62,8 +65,8 @@ def main():
             # for_otladka[4].append(convert_to_regular_dict(possible_moves_white_pl))
 
             maxim = True if color_computer == white else False
-            best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 15, next_variants_move_and_motion, maxim, float('-inf'), float('inf'), 0)
-
+            best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 10, next_variants_move_and_motion, maxim, float('-inf'), float('inf'), 0)
+            print(count_all_variants)
             if color_computer == white:
                 possible_moves = new_generator_motion_for_minmax(
                     next_variants_move_and_motion[0], main_board.give_chips(),
@@ -102,6 +105,9 @@ def main():
 
             win_color = main_board.check_colors_win()
             comp_move = not comp_move
+
+            time_end = time.time()
+            #print(time_end-time_start)
 
         else:
             if event != None:

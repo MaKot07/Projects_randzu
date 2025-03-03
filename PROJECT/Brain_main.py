@@ -195,7 +195,8 @@ def new_generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_col
         dict_with_variants[(7,7)] = 0.001
         return dict_with_variants
 
-    coefficent = [0.1, 0.3, 0.5, 0.6]
+    coefficent = [0.3, 0.5, 0.6, 0.7]
+
     empty = np.array([-1, -1], dtype=np.int8)
 
     dict_with_variants.pop(new_coord_motion, None)
