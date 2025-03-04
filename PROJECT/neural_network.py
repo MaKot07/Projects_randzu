@@ -316,15 +316,6 @@ def generation_labels():
                   newline='') as file:
             np.savetxt(file, [new_labels], delimiter=',', newline='\n', fmt='%d')
 
-        possible_moves_white_pl = typed.Dict.empty(
-            key_type=types.UniTuple(types.int64, 2),
-            value_type=numba.types.int64
-        )
-        possible_moves_black_pl = typed.Dict.empty(
-            key_type=types.UniTuple(types.int64, 2),
-            value_type=numba.types.int64
-        )
-
 
 @njit
 def new_generator_motion_for_create_start_moves(now_coord_all_move_and_color, dict_with_variants, line_enemy, color_enemy):
@@ -332,7 +323,7 @@ def new_generator_motion_for_create_start_moves(now_coord_all_move_and_color, di
         dict_with_variants[(7, 7)] = 0.001
         return dict_with_variants
 
-    coefficent = [0.1, 0.3, 0.5]
+    coefficent = [0.3, 0.5, 0.6, 0.7]
     empty = np.array([-1, -1], dtype=np.int8)
 
     all_coords = []
@@ -343,27 +334,42 @@ def new_generator_motion_for_create_start_moves(now_coord_all_move_and_color, di
     for new_coord_motion in all_coords:
         new_coord_motion = np.array(new_coord_motion)
         for line in line_enemy:
-            if check_in_2D_array(new_coord_motion, line):
-                if np.array_equal(line[1], empty):
-                    for i in range(-1, 2):
-                        for j in range(-1, 2):
-                            if i == 0 and j == 0:
-                                continue
-                            chip = (new_coord_motion[0] + i, new_coord_motion[1] + j)
-                            if chip not in dict_with_variants and check_motion_for_brain(chip[0], chip[1], now_coord_all_move_and_color):
-                                dict_with_variants[chip] = coefficent[0]
-                    continue
+            if not check_in_2D_array(new_coord_motion, line):
+                continue
+            if np.array_equal(line[1], empty):
+                for i in range(-1, 2):
+                    for j in range(-1, 2):
+                        if i == 0 and j == 0:
+                            continue
+                        chip = (new_coord_motion[0] + i, new_coord_motion[1] + j)
 
-                line_length = give_len_line(line)
-                x_progressive = line[1][0] - line[0][0]
-                y_progressive = line[1][1] - line[0][1]
+                        if chip not in dict_with_variants and check_motion_for_brain(chip[0], chip[1],
+                                                                                     now_coord_all_move_and_color):
+                            dict_with_variants[chip] = coefficent[0]
 
-                coord_new_max = (
-                x_progressive + line[line_length-1][0], y_progressive + line[line_length-1][1])
-                coord_new_min = (line[0][0] - x_progressive, line[0][1] - y_progressive)
+                continue
 
-                for coord in [coord_new_max, coord_new_min]:
-                    if check_motion_for_brain(coord[0], coord[1], now_coord_all_move_and_color):
+            line_length = give_len_line(line)
+            x_progressive = line[1][0] - line[0][0]
+            y_progressive = line[1][1] - line[0][1]
+
+            coord_new_max = (
+                x_progressive + line[line_length - 1][0], y_progressive + line[line_length - 1][1])
+            coord_new_min = (line[0][0] - x_progressive, line[0][1] - y_progressive)
+
+            for coord in [coord_new_max, coord_new_min]:
+                if check_motion_for_brain(coord[0], coord[1], now_coord_all_move_and_color):
+                    if dict_with_variants.get(coord) is not None:
+                        if dict_with_variants.get(coord) >= coefficent[1]:
+                            dict_with_variants[coord] = coefficent[3]
+                            continue
+
+                        if line_length == 2:
+                            dict_with_variants[coord] = coefficent[1]
+                        elif line_length >= 3:
+                            dict_with_variants[coord] = coefficent[2]
+
+                    else:
                         if line_length == 2:
                             dict_with_variants[coord] = coefficent[1]
                         elif line_length >= 3:
@@ -592,10 +598,10 @@ def create_schedule_lr(model):
 #generation_position_and_save(10000, 50)
 
 
-generation_labels()
+#generation_labels()
 
 
-#show_positions()
+show_positions()
 
 
 #train_neural_network()
