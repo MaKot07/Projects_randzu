@@ -1,5 +1,5 @@
 from numba import njit
-from numba import typed
+from numba import typed, prange
 import numpy as np
 
 
@@ -76,16 +76,17 @@ def find_near_chips(x, y, need_color, coord_all_move_and_color):
     near_chips = []
     chip = np.array([0, 0, need_color])
 
-    for i in range(-1, 2):
-        for j in range(-1, 2):
+    for i in prange(-1, 2):
+        for j in prange(-1, 2):
             if i == 0 and j == 0:
                 continue
             chip[0] = x + i
             chip[1] = y + j
-            if check_in_2D_array( chip, coord_all_move_and_color):
+            if check_in_2D_array(chip, coord_all_move_and_color):
                 near_chips.append([chip[0], chip[1]])
+
     if len(near_chips) == 0:
-        return np.empty( (0,2), dtype=np.int8), False
+        return np.empty((0, 2), dtype=np.int8), False
 
     return np.array(near_chips, dtype=np.int8), True
 
@@ -95,8 +96,10 @@ def find_need_line(coords_chip, now_all_line_player, near_chips):
     list_with_len_1 = []
     result_list = typed.List()
 
-    for near_coords_chip in near_chips:
-        for lines in now_all_line_player:
+    for i in prange(len(near_chips)):
+        near_coords_chip = near_chips[i]
+        for j in range(len(now_all_line_player)):
+            lines = now_all_line_player[j]
             if check_in_2D_array(near_coords_chip, lines):
                 in_condition = check_line(coords_chip, lines)
                 if in_condition:
@@ -125,6 +128,7 @@ def find_need_line(coords_chip, now_all_line_player, near_chips):
 @njit
 def check_connect_lines(coord_chip, line_without_empty, all_line):
     add = (False, 0)
+
     if not (coord_chip[0] < line_without_empty[0][0] or (coord_chip[0] == line_without_empty[0][0] and coord_chip[1] < line_without_empty[0][1])):
         new_coord_x_chip = coord_chip[0] + (coord_chip[0] - line_without_empty[-1][0])
         new_coord_y_chip = coord_chip[1] + (coord_chip[1] - line_without_empty[-1][1])
@@ -134,27 +138,35 @@ def check_connect_lines(coord_chip, line_without_empty, all_line):
         new_coord_y_chip = coord_chip[1] - (line_without_empty[0][1] - coord_chip[1])
         next_coord_chip = np.array([new_coord_x_chip, new_coord_y_chip], dtype=np.int8)
 
-    for lines in all_line:
+    result_index = -1
+    found = False
+
+    for index in prange(len(all_line)):
+        lines = all_line[index]
         if check_in_2D_array(next_coord_chip, lines):
             if give_len_line(lines) != 1:
                 check_next_line = check_line(coord_chip, lines)
-                if check_next_line == True:
-                    for index in range(len(all_line)):
-                        if np.array_equal(all_line[index], lines):
-                            return (True, index)
+                if check_next_line:
+                    found = True
+                    result_index = index
+                    break
             else:
-                for index in range(len(all_line)):
-                    if np.array_equal(all_line[index], lines):
-                        add = (True, index)
+                if np.array_equal(all_line[index], lines):
+                    add = (True, index)
+
+    if found:
+        return (True, result_index)
+
     return add
 
 @njit
 def dellit_near_chips(coords_chip, new_line, connect_line, list_whith_lines):
     index_to_del = []
 
-    for i, arr in enumerate(new_line):
-        if (coords_chip == arr).all():
-            for j, arr_with_lines in enumerate(list_whith_lines):
+    for i in prange(len(new_line)):
+        if (coords_chip == new_line[i]).all():
+            for j in prange(len(list_whith_lines)):
+                arr_with_lines = list_whith_lines[j]
                 if (new_line[i - 1] == arr_with_lines[0]).all() or (new_line[i + 1] == arr_with_lines[0]).all() or (connect_line == arr_with_lines).all():
                     index_to_del.append(j)
             break
@@ -164,6 +176,7 @@ def dellit_near_chips(coords_chip, new_line, connect_line, list_whith_lines):
 @njit
 def dellit_near_chips_without_connect(coords_chip, new_line, list_whith_lines):
     index_to_del = []
+
     arr_empty = np.array([-1, -1], dtype=np.int8)
     if (coords_chip == new_line[0]).all():
         for j, arr_with_lines in enumerate(list_whith_lines):
@@ -220,12 +233,17 @@ def check_want_newgame(x_pixel, y_pixel):
         return True
     return False
 
+
+#Not good
 @njit
 def check_in_2D_array(check_array, check_in_array):
     if check_in_array.size == 0:
         return False
-    for sub in check_in_array:
-        if (sub == check_array).all():
+
+    n_rows = check_in_array.shape[0]
+
+    for i in prange(n_rows):
+        if (check_in_array[i] == check_array).all():
             return True
     return False
 

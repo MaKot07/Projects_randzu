@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import pickle
 import numpy as np
+from numba import njit, int8
 
 
 # with open(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\Banner\data',
@@ -31,19 +32,20 @@ data = np.loadtxt(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\Banner\data1',
 
 
 
-x = list(range(30))
+# x = list(range(30))
+#
+# y = [0]*30
+# c = 0
+# m = 0
+# for i in range(30):
+#     for j in range(len(data)):
+#         if data[j][i] != 0:
+#             c += 1
+#             m += data[j][i]
+#     y[i] = m / c if c != 0 else 0
+#     c = 0
+#     m = 0
+#
+# plt.plot(x, y)
+# plt.show()
 
-y = [0]*30
-c = 0
-m = 0
-for i in range(30):
-    for j in range(len(data)):
-        if data[j][i] != 0:
-            c += 1
-            m += data[j][i]
-    y[i] = m / c if c != 0 else 0
-    c = 0
-    m = 0
-
-plt.plot(x, y)
-plt.show()

@@ -70,8 +70,8 @@ class Board:
         else:
             all_line = self.now_all_line_whiteplayer
 
-        if check_draw_njit(cell_qty, self.now_coord_all_move_and_color):
-            return None
+        # if check_draw_njit(cell_qty, self.now_coord_all_move_and_color):
+        #     return None
 
         if all_line.size == 0:
             return False
@@ -188,14 +188,13 @@ def minimax(board_condition, depth, last_variants_move_and_motion, maximizingPla
     return value, best_movement, count_variants
 
 
-
-@njit
+@njit()
 def new_generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_color, dict_with_variants, lines):
     if new_coord_motion == (-1, -1):
         dict_with_variants[(7,7)] = 0.001
         return dict_with_variants
 
-    coefficent = [0.3, 0.5, 0.6, 0.7]
+    coefficent = [0.2, 0.4, 0.6, 0.7]
 
     empty = np.array([-1, -1], dtype=np.int8)
 
@@ -205,6 +204,8 @@ def new_generator_motion_for_minmax(new_coord_motion, now_coord_all_move_and_col
     for line in lines:
         if not check_in_2D_array(new_coord_motion, line):
             continue
+
+
         if np.array_equal(line[1], empty):
             for i in range(-1, 2):
                 for j in range(-1, 2):
@@ -405,29 +406,32 @@ def check_line_isolated(our_check_line, now_coord_all_move_and_color):
     check_coord_new_max = int(check_motion_for_brain(coord_new_max[0], coord_new_max[1], now_coord_all_move_and_color))
     check_coord_new_min = int(check_motion_for_brain(coord_new_min[0], coord_new_min[1], now_coord_all_move_and_color))
 
-    return 2 - check_coord_new_min - check_coord_new_max
+    return check_coord_new_min + check_coord_new_max
 
 @njit
 def find_position_score(now_all_line_blackplayer, now_all_line_whiteplayer, now_coord_all_move_and_color):
 
     score_rules = {
-        0: {4:10000, 3:1000, 2:140, 1:5},
-        1: {4:3000, 3:350, 2:60}
+        2: {4:100000, 3:10000, 2:1000, 1:10},
+        1: {4:5000, 3:500, 2:50}
     }
 
-    pos_score = 0
-    for line in now_all_line_whiteplayer:
+    pos_score_white = 0
+    pos_score_black = 0
+
+    for i in prange(len(now_all_line_whiteplayer)):
+        line = now_all_line_whiteplayer[i]
         check_isolated = check_line_isolated(line, now_coord_all_move_and_color)
         if check_isolated in score_rules:
-            pos_score += score_rules[check_isolated][give_len_line(line)]
+            pos_score_white += score_rules[check_isolated][give_len_line(line)]
 
-
-    for line in now_all_line_blackplayer:
+    for i in prange(len(now_all_line_blackplayer)):
+        line = now_all_line_blackplayer[i]
         check_isolated = check_line_isolated(line, now_coord_all_move_and_color)
         if check_isolated in score_rules:
-            pos_score -= score_rules[check_isolated][give_len_line(line)]
+            pos_score_black += score_rules[check_isolated][give_len_line(line)]
 
-    return pos_score
+    return pos_score_white - pos_score_black
 
 
 @njit
