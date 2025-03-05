@@ -3,6 +3,7 @@ from Brain_main import *
 import numba
 from numba import typed, types
 import time
+import copy
 
 
 def now_event():
@@ -185,4 +186,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
