@@ -423,12 +423,19 @@ def train_neural_network():
 
     training_model, prediction_model = build_model()
 
-    lr_scheduler = tf.keras.callbacks.LearningRateScheduler(create_schedule_lr(training_model)) #простой вариант
+    #lr_scheduler = tf.keras.callbacks.LearningRateScheduler(create_schedule_lr(training_model)) #простой вариант
     # patience = 5  # количество эпох, которые нужно ждать перед изменением lr
     # lr_scheduler = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss ',
     #                                 patience=patience,
     #                                 factor=0.5,
     #                                 min_lr=0.001)
+    patience = 5  # Количество эпох, которые нужно ждать перед изменением lr
+    lr_scheduler = tf.keras.callbacks.ReduceLROnPlateau(
+        monitor='val_loss',
+        patience=patience,
+        factor=0.5,  # Уменьшаем learning rate в 2 раза
+        min_lr=0.0001  # Минимальное значение learning rate
+    )
 
     #Сохранение автоматически
     # checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
@@ -451,10 +458,11 @@ def train_neural_network():
 
     history = training_model.fit([partial_x_train, partial_y_train],
                         partial_y_train,
-                        epochs=100,
+                        epochs=50,
                         batch_size=256,
                         validation_data=([x_val, y_val], y_val),
                         callbacks=[checkpoint_callback, lr_scheduler])
+
 
     prediction_model.load_weights(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\neural_network\best_weights.weights.h5')
     prediction_model.save(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\neural_network\best_prediction_model.keras')
@@ -515,22 +523,24 @@ def build_model():
     true_output = Input(shape=(2,), name="coords")
 
     layer = layers.Dense(2048, activation="relu")(input_layer)
-    #layer = layers.Dense(1024, activation="relu")(layer)
-    #layer = layers.Dense(1024, activation="relu")(layer)
+    layer = layers.Dense(1024, activation="relu")(layer)
+    layer = layers.Dense(1024, activation="relu")(layer)
+    # layer = layers.Dense(512, activation="relu")(layer)
+    # layer = layers.Dense(256, activation="relu")(layer)
 
     predict_output = layers.Dense(2, activation= custom_activation)(layer)
 
     loss_layer = CustomLossLayer()([true_output, predict_output, input_layer])
 
     training_model  = keras.models.Model(inputs=[input_layer, true_output], outputs=loss_layer)
-    training_model .compile(optimizer='adam')
+    training_model.compile(optimizer='adam', metrics=['mae'])
 
     prediction_model = keras.models.Model(inputs=input_layer, outputs=predict_output)
 
     return training_model, prediction_model
 
 def custom_activation(x):
-    return tf.sigmoid(x) * 15
+    return tf.sigmoid(x) * 14
 
 class CustomLossLayer(Layer):
     def __init__(self, **kwargs):
@@ -556,7 +566,7 @@ class CustomLossLayer(Layer):
 
         overlap_penalty = tf.cast(pred_occupancy != 0, tf.float32)
 
-        total_loss = base_loss * overlap_penalty * 4 + base_loss
+        total_loss = base_loss * overlap_penalty * 3 + base_loss
 
         self.add_loss(total_loss)
 
@@ -585,9 +595,9 @@ def create_schedule_lr(model):
         if len(logs) == 0:
             return 0.001
 
-        val_accuracy = logs['val_loss'][-1]
-        if val_accuracy > 0.3 and val_accuracy < 0.35 and False:
-            return 0.1
+        val_loss = logs['val_loss'][-1]
+        if val_loss > 2000:
+            return 0.01
         else:
             return 0.001
     return schedule_lr
@@ -601,8 +611,8 @@ def create_schedule_lr(model):
 #generation_labels()
 
 
-show_positions()
+#show_positions()
 
 
-#train_neural_network()
+train_neural_network()
 
