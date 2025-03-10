@@ -93,7 +93,7 @@ class Game_Graphics:
 
 
     def draw_screen(self):
-        image_path = os.path.join("Graphics", "images", "table1_middle.jpg")
+        image_path = os.path.join("Graphics", "images", "table1_middle.png")
         background_image = pygame.image.load(image_path)
         screen.blit(background_image, (0, 0))
 
@@ -202,7 +202,7 @@ def color_choice():
         for button in dynamic_buttons:
             button.check_hover(mouse_pos)
 
-        image_path = os.path.join("Graphics", "images", "table1_middle.jpg")
+        image_path = os.path.join("Graphics", "images", "table1_middle.png")
         background_image = pygame.image.load(image_path)
         screen.blit(background_image, (0, 0))
 
