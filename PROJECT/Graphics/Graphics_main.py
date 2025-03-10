@@ -1,6 +1,7 @@
 import sys
 import pygame
 import numpy as np
+import os
 
 
 black = -1
@@ -92,14 +93,16 @@ class Game_Graphics:
 
 
     def draw_screen(self):
-        background_image = pygame.image.load(r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\Graphics\images\table1_middle.jpg')
+        image_path = os.path.join("Graphics", "images", "table1_middle.jpg")
+        background_image = pygame.image.load(image_path)
         screen.blit(background_image, (0, 0))
 
     #@staticmethod
     def text_output_number_of_movies(self):
         text = f'Moves made: {self.__number_of_movies}'
         pygame.draw.rect(screen, button_color, pygame.Rect(120, 750, 290, 70), border_radius=10)
-        font = pygame.font.Font(r"C:\Users\lehas\GitHub\Projects_randzu\PROJECT\Graphics\fonts\PoetsenOne-Regular.ttf",36)
+        image_path = os.path.join("Graphics", "fonts", "PoetsenOne-Regular.ttf")
+        font = pygame.font.Font(image_path,36)
         text_surface = font.render(text, True, text_color)
         text_rect = text_surface.get_rect(center=pygame.Rect(120, 750, 290, 70).center)
         screen.blit(text_surface, text_rect)
@@ -118,16 +121,16 @@ class Game_Graphics:
         if color == black:
             text = f'The game is over, black wins'
             pygame.draw.rect(screen, button_color, pygame.Rect(200, 300, 520, 70), border_radius=10)
-            font = pygame.font.Font(
-                r"C:\Users\lehas\GitHub\Projects_randzu\PROJECT\Graphics\fonts\PoetsenOne-Regular.ttf", 36)
+            image_path = os.path.join("Graphics", "fonts", "PoetsenOne-Regular.ttf")
+            font = pygame.font.Font(image_path, 36)
             text_surface = font.render(text, True, text_color)
             text_rect = text_surface.get_rect(center=pygame.Rect(200, 300, 520, 70).center)
             screen.blit(text_surface, text_rect)
         else:
             text = f'The game is over, white wins!!'
             pygame.draw.rect(screen, button_color, pygame.Rect(200, 300, 520, 70), border_radius=10)
-            font = pygame.font.Font(
-                r"C:\Users\lehas\GitHub\Projects_randzu\PROJECT\Graphics\fonts\PoetsenOne-Regular.ttf", 36)
+            image_path = os.path.join("Graphics", "fonts", "PoetsenOne-Regular.ttf")
+            font = pygame.font.Font(image_path, 36)
             text_surface = font.render(text, True, text_color)
             text_rect = text_surface.get_rect(center=pygame.Rect(200, 300, 520, 70).center)
             screen.blit(text_surface, text_rect)
@@ -156,7 +159,8 @@ class Button:
 
     def draw(self, surface):
         pygame.draw.rect(surface, self.color, self.rect, border_radius=10)
-        font = pygame.font.Font(r"C:\Users\lehas\GitHub\Projects_randzu\PROJECT\Graphics\fonts\PoetsenOne-Regular.ttf", 36)
+        image_path = os.path.join("Graphics", "fonts", "PoetsenOne-Regular.ttf")
+        font = pygame.font.Font(image_path, 36)
         text_surface = font.render(self.text, True, text_color)
         text_rect = text_surface.get_rect(center=self.rect.center)
         surface.blit(text_surface, text_rect)
@@ -198,8 +202,8 @@ def color_choice():
         for button in dynamic_buttons:
             button.check_hover(mouse_pos)
 
-        background_image = pygame.image.load(
-            r'C:\Users\lehas\GitHub\Projects_randzu\PROJECT\Graphics\images\table1_middle.jpg')
+        image_path = os.path.join("Graphics", "images", "table1_middle.jpg")
+        background_image = pygame.image.load(image_path)
         screen.blit(background_image, (0, 0))
 
         for button in dynamic_buttons+passive_buttons:

@@ -66,7 +66,7 @@ def main():
             # for_otladka[4].append(convert_to_regular_dict(possible_moves_white_pl))
 
             maxim = True if color_computer == white else False
-            best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 10, next_variants_move_and_motion, maxim, float('-inf'), float('inf'), 0)
+            best_value, coord_best_move, count_all_variants = minimax(Board_MinMax, 12, next_variants_move_and_motion, maxim, float('-inf'), float('inf'), 0)
             print(count_all_variants)
             if color_computer == white:
                 possible_moves = new_generator_motion_for_minmax(
